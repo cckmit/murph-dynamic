@@ -1,0 +1,3 @@
+com.murphyl.etl.task.children.extractor.impl.RandomExtractor
+com.murphyl.etl.task.children.extractor.impl.TextFileExtractor
+com.murphyl.etl.task.children.extractor.impl.JdbcExtractor

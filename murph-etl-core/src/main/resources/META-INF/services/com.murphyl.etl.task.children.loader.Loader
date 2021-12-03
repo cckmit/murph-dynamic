@@ -1,0 +1,2 @@
+com.murphyl.etl.task.children.loader.impl.ConsoleLoader
+com.murphyl.etl.task.children.loader.impl.TextFileLoader

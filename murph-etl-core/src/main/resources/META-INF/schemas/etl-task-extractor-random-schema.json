@@ -1,0 +1,46 @@
+{
+    "$schema": "https://json-schema.org/draft-07/schema",
+    "type": "object",
+    "title": "etl-task-random-extractor",
+    "description": "create date random",
+    "required": [ "engine","columns" ],
+    "properties": {
+        "engine": {
+            "description": "可先数据生成引擎",
+            "type": "string",
+            "enum": ["jexl"]
+        },
+        "size": {
+            "description": "生成数据的记录数",
+            "type": "integer",
+            "minimum": 1
+        },
+        "columns": {
+            "type": "array",
+            "description": "字段列表",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+                "type": "object",
+                "required": [ "name", "expr" ],
+                "properties": {
+                    "name": {
+                        "description": "字段名称",
+                        "type": "string"
+                    },
+                    "expr": {
+                        "description": "值生成表达式",
+                        "type": "string"
+                    },
+                    "extra": {
+                        "description": "中间值池",
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

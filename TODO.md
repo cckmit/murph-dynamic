@@ -1,0 +1,1 @@
+- [ ] [add json schema](https://mvnrepository.com/artifact/com.networknt/json-schema-validator/1.0.64)

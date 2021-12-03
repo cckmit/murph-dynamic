@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<etl-job name="测试任务 001">
+    <params>
+        <assign name="a" value="hello" />
+        <assign name="b" value="world" />
+    </params>
+    <task id="hello-0001" name="测试任务">
+        <writer></writer>
+    </task>
+    <task id="hello-0002" parents="hello-0001">
+        <reader></reader>
+        <writer></writer>
+    </task>
+    <task id="hello-0003" parents="hello-0001,hello-0002">
+        <writer></writer>
+    </task>
+    <task id="hello-0004">
+        <writer></writer>
+    </task>
+    <task id="hello-0005">
+        <writer></writer>
+    </task>
+    <task id="hello-0006">
+        <reader></reader>
+        <writer></writer>
+    </task>
+</etl-job>

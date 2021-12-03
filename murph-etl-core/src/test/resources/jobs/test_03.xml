@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<etl-job name="测试任务 002" debug="true">
+    <params>
+        <assign name="a" value="${format(date_add(now(), 1), 'yyyy-MM-dd')}" />
+        <assign name="b" value="${format(date_add(now(), -10, 'YEARS'), 'yyyy-MM-dd HH:mm:ss.SSS')}" />
+        <assign name="c" value="${timestamp()}" />
+    </params>
+    <task id="hello-0001" name="控制台显示随机数据">
+        <extractor type="random" batchSize="300">
+            <![CDATA[
+                {
+                    "engine": "jexl",
+                    "columns": [
+                        {
+                            "name": "id",
+                            "expr": "${idGenerator.next()}",
+                            "extra": {
+                                "idGenerator": "${seq()}"
+                            }
+                        }, {
+                            "name": "name",
+                            "expr": "${uuid()}"
+                        }, {
+                            "name": "ts",
+                            "expr": "${timestamp()}"
+                        }
+                    ]
+                }
+            ]]>
+        </extractor>
+        <loader type="console" batchSize="100" />
+    </task>
+    <task id="hello-0002" name="生成随机数据写入文本">
+        <extractor type="random" batchSize="300">
+            <![CDATA[
+                {
+                    "engine": "jexl",
+                    "columns": [
+                        {
+                            "name": "id",
+                            "expr": "${idGenerator.next()}",
+                            "extra": {
+                                "idGenerator": "${seq()}"
+                            }
+                        }, {
+                            "name": "name",
+                            "expr": "${uuid()}"
+                        }, {
+                            "name": "ts",
+                            "expr": "${timestamp()}"
+                        }, {
+                            "name": "other",
+                            "expr": "hello, \"world"
+                        }, {
+                            "name": "中文",
+                            "expr": "测试UTF-8中文"
+                        }
+                    ]
+                }
+            ]]>
+        </extractor>
+        <loader type="csv" batchSize="100" target="/text.csv" />
+    </task>
+</etl-job>
