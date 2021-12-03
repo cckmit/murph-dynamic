@@ -1,4 +1,4 @@
-package com.murphyl.expr.jexl;
+package com.murphyl.expr.jexl2;
 
 import com.murphyl.expr.core.ExpressionEvaluator;
 import com.murphyl.expr.support.PreparedExpressions;
@@ -15,13 +15,13 @@ import java.util.regex.Pattern;
  * @date: 2021/12/2 20:15
  * @author: murph
  */
-public class JexlEvaluator implements ExpressionEvaluator {
+public class Jexl2Evaluator implements ExpressionEvaluator {
 
     private static final Pattern EXPR_PATTERN = Pattern.compile("(^\\$\\{)(.+)(\\}$)");
 
     private final JexlEngine engine;
 
-    public JexlEvaluator() {
+    public Jexl2Evaluator() {
         this.engine = new JexlEngine();
     }
 

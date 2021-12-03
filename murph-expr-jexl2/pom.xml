@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>murph-expr-jexl</artifactId>
+    <artifactId>murph-expr-jexl2</artifactId>
 
     <properties>
         <maven.compiler.source>12</maven.compiler.source>
