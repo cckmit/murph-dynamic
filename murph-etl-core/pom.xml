@@ -60,12 +60,22 @@
         </dependency>
         <dependency>
             <groupId>com.murphyl</groupId>
-            <artifactId>murph-dataframe</artifactId>
+            <artifactId>murph-etl-base</artifactId>
             <version>1.0</version>
         </dependency>
         <dependency>
             <groupId>com.murphyl</groupId>
             <artifactId>murph-expr-core</artifactId>
+            <version>1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.murphyl</groupId>
+            <artifactId>murph-etl-jdbc</artifactId>
+            <version>1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.murphyl</groupId>
+            <artifactId>murph-etl-rest</artifactId>
             <version>1.0</version>
         </dependency>
         <dependency>

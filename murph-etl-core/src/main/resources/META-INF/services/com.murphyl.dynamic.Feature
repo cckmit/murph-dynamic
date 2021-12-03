@@ -1,17 +1,16 @@
 # job schema loaders
-com.murphyl.etl.job.schema.loader.impl.FilesystemJobSchemaLoader
+com.murphyl.etl.job.schema.loader.FilesystemJobSchemaLoader
 
 # job schema parsers
-com.murphyl.etl.job.schema.parser.impl.XmlJobSchemaParser
+com.murphyl.etl.job.schema.parser.XmlJobSchemaParser
 
 # extractors
-com.murphyl.etl.task.children.extractor.impl.RandomExtractor
-com.murphyl.etl.task.children.extractor.impl.TextFileExtractor
-com.murphyl.etl.task.children.extractor.impl.JdbcExtractor
+com.murphyl.etl.task.extractor.RandomExtractor
+com.murphyl.etl.task.extractor.TextFileExtractor
 
 # transforms
-com.murphyl.etl.task.children.transformer.impl.LogicFilterTransformer
+com.murphyl.etl.task.transformer.LogicFilterTransformer
 
 # loaders
-com.murphyl.etl.task.children.loader.impl.ConsoleLoader
-com.murphyl.etl.task.children.loader.impl.TextFileLoader
+com.murphyl.etl.task.loader.ConsoleLoader
+com.murphyl.etl.task.loader.TextFileLoader

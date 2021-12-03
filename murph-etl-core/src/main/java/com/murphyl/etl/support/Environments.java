@@ -46,7 +46,7 @@ public final class Environments {
         while (featureIterator.hasNext()) {
             Feature feature = featureIterator.next();
             Class group = feature.group();
-            logger.info("dynamic feature({}) group by ({}) with alias {}", feature, group.getCanonicalName(), feature.alias());
+            logger.info("dynamic feature ({}) group by ({}) with alias {}", feature, group.getCanonicalName(), feature.alias());
             for (String alias : feature.alias()) {
                 DYNAMIC_FEATURE.put(feature.group(), alias, feature);
             }

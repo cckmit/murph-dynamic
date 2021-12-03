@@ -16,6 +16,9 @@
         <module>murph-expr-core</module>
         <module>murph-dataframe</module>
         <module>murph-datasource</module>
+        <module>murph-etl-base</module>
+        <module>murph-etl-jdbc</module>
+        <module>murph-etl-rest</module>
     </modules>
 
     <properties>
