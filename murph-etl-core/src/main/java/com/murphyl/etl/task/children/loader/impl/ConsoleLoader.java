@@ -1,16 +1,14 @@
 package com.murphyl.etl.task.children.loader.impl;
 
 import com.google.common.primitives.Ints;
-import com.murphyl.etl.core.Dataframe;
+import com.murphyl.dataframe.Dataframe;
 import com.murphyl.etl.support.Qualifier;
 import com.murphyl.etl.task.children.loader.Loader;
 import de.vandermeer.asciitable.*;
-import de.vandermeer.skb.interfaces.document.TableRowStyle;
 import de.vandermeer.skb.interfaces.transformers.textformat.TextAlignment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.Properties;
 

@@ -1,7 +1,7 @@
 package com.murphyl.etl.task.children.extractor.impl;
 
 import com.google.common.primitives.Ints;
-import com.murphyl.etl.core.Dataframe;
+import com.murphyl.dataframe.Dataframe;
 import com.murphyl.etl.support.Environments;
 import com.murphyl.etl.support.Qualifier;
 import com.murphyl.etl.task.children.extractor.Extractor;

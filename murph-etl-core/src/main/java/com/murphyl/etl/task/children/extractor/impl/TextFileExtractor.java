@@ -1,10 +1,9 @@
 package com.murphyl.etl.task.children.extractor.impl;
 
-import com.murphyl.etl.core.Dataframe;
+import com.murphyl.dataframe.Dataframe;
 import com.murphyl.etl.task.children.extractor.Extractor;
 import com.murphyl.etl.support.Qualifier;
 
-import java.util.Date;
 import java.util.Map;
 import java.util.Properties;
 

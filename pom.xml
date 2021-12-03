@@ -13,6 +13,7 @@
         <module>murph-etl-core</module>
         <module>murph-expr-jexl</module>
         <module>murph-expr-core</module>
+        <module>murph-dataframe</module>
     </modules>
 
     <properties>

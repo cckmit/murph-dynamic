@@ -3,15 +3,13 @@ package com.murphyl.etl.task.children.loader.impl;
 import com.google.common.escape.Escaper;
 import com.google.common.escape.Escapers;
 import com.google.common.primitives.Ints;
-import com.murphyl.etl.core.Dataframe;
+import com.murphyl.dataframe.Dataframe;
 import com.murphyl.etl.support.Qualifier;
 import com.murphyl.etl.task.children.loader.Loader;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.Map;
 import java.util.Properties;

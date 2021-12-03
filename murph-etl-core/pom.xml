@@ -60,6 +60,11 @@
         </dependency>
         <dependency>
             <groupId>com.murphyl</groupId>
+            <artifactId>murph-dataframe</artifactId>
+            <version>1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.murphyl</groupId>
             <artifactId>murph-expr-core</artifactId>
             <version>1.0</version>
         </dependency>

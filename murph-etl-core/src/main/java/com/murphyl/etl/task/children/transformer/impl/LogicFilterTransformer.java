@@ -1,6 +1,6 @@
 package com.murphyl.etl.task.children.transformer.impl;
 
-import com.murphyl.etl.core.Dataframe;
+import com.murphyl.dataframe.Dataframe;
 import com.murphyl.etl.support.Qualifier;
 import com.murphyl.etl.task.children.transformer.Transformer;
 

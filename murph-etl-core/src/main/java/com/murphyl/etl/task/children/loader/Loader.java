@@ -1,6 +1,6 @@
 package com.murphyl.etl.task.children.loader;
 
-import com.murphyl.etl.core.Dataframe;
+import com.murphyl.dataframe.Dataframe;
 import com.murphyl.etl.task.children.TaskChild;
 
 import java.util.Map;
@@ -22,6 +22,6 @@ public interface Loader  extends TaskChild {
      * @param props
      * @return
      */
-    public void load(Map<String, Object> jobParams, Dataframe dataframe, Properties props);
+    void load(Map<String, Object> jobParams, Dataframe dataframe, Properties props);
 
 }
