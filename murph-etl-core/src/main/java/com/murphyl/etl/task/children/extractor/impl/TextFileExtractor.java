@@ -1,8 +1,9 @@
 package com.murphyl.etl.task.children.extractor.impl;
 
 import com.murphyl.dataframe.Dataframe;
+import com.murphyl.dynamic.Group;
+import com.murphyl.dynamic.Qualifier;
 import com.murphyl.etl.task.children.extractor.Extractor;
-import com.murphyl.etl.support.Qualifier;
 
 import java.util.Map;
 import java.util.Properties;
@@ -13,7 +14,8 @@ import java.util.Properties;
  * @date: 2021/12/2 15:53
  * @author: murph
  */
-@Qualifier({"text-file", "text", "csv"})
+@Group(Extractor.class)
+@Qualifier({"text-file", "file", "csv"})
 public class TextFileExtractor implements Extractor {
 
     @Override

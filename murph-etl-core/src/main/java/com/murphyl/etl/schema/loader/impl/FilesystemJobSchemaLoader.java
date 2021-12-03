@@ -1,6 +1,9 @@
-package com.murphyl.etl.schema.loader;
+package com.murphyl.etl.schema.loader.impl;
 
+import com.murphyl.dynamic.Group;
+import com.murphyl.dynamic.Qualifier;
 import com.murphyl.etl.job.JobSchema;
+import com.murphyl.etl.schema.loader.JobSchemaLoader;
 
 import java.util.List;
 
@@ -10,6 +13,8 @@ import java.util.List;
  * @date: 2021/11/16 10:39
  * @author: murph
  */
+@Group(JobSchemaLoader.class)
+@Qualifier({"filesystem", "fs"})
 public class FilesystemJobSchemaLoader implements JobSchemaLoader {
 
     @Override

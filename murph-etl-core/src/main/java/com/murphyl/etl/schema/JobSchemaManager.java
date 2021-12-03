@@ -27,7 +27,7 @@ public final class JobSchemaManager {
     public static JobSchema parse(String filepath) {
         int dotIndex = filepath.lastIndexOf('.');
         String ext = (dotIndex == -1) ? "" : filepath.substring(dotIndex + 1);
-        JobSchemaParser parser = REGISTERED_SCHEMA_PARSERS.get(ext);
+        JobSchemaParser parser = Environments.getFeature(JobSchemaParser.class, ext);
         if (null == parser) {
             throw new IllegalStateException("schema parser not found: " + ext);
         }

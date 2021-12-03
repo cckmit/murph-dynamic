@@ -1,5 +1,7 @@
 package com.murphyl.expr.jexl2;
 
+import com.murphyl.dynamic.Group;
+import com.murphyl.dynamic.Qualifier;
 import com.murphyl.expr.core.ExpressionEvaluator;
 import com.murphyl.expr.support.PreparedExpressions;
 import org.apache.commons.jexl2.JexlEngine;
@@ -15,6 +17,8 @@ import java.util.regex.Pattern;
  * @date: 2021/12/2 20:15
  * @author: murph
  */
+@Group(ExpressionEvaluator.class)
+@Qualifier({"jexl2", "jexl"})
 public class Jexl2Evaluator implements ExpressionEvaluator {
 
     private static final Pattern EXPR_PATTERN = Pattern.compile("(^\\$\\{)(.+)(\\}$)");
@@ -23,11 +27,6 @@ public class Jexl2Evaluator implements ExpressionEvaluator {
 
     public Jexl2Evaluator() {
         this.engine = new JexlEngine();
-    }
-
-    @Override
-    public String[] getAlias() {
-        return new String[]{"jexl"};
     }
 
     @Override

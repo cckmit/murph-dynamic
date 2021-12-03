@@ -1,8 +1,5 @@
 package com.murphyl.etl.task;
 
-import com.google.common.collect.Maps;
-
-import java.util.Map;
 import java.util.Properties;
 
 /**

@@ -1,5 +1,6 @@
 package com.murphyl.etl.schema.loader;
 
+import com.murphyl.dynamic.Feature;
 import com.murphyl.etl.job.JobSchema;
 
 import java.util.List;
@@ -10,7 +11,7 @@ import java.util.List;
  * @date: 2021/11/16 10:36
  * @author: murph
  */
-public interface JobSchemaLoader {
+public interface JobSchemaLoader extends Feature {
 
     /**
      * 加载任务

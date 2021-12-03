@@ -1,5 +1,7 @@
 package com.murphyl.expr.core;
 
+import com.murphyl.dynamic.Feature;
+
 import java.util.Map;
 
 /**
@@ -8,14 +10,7 @@ import java.util.Map;
  * @date: 2021/12/2 20:14
  * @author: murph
  */
-public interface ExpressionEvaluator {
-
-    /**
-     * 注册的名称
-     *
-     * @return
-     */
-    String[] getAlias();
+public interface ExpressionEvaluator extends Feature {
 
     /**
      * 执行表达式实现

@@ -1,8 +1,7 @@
 package com.murphyl.etl.support;
 
-import com.murphyl.etl.utils.ReflectUtils;
-import com.murphyl.expr.core.ExpressionEvaluator;
-import com.murphyl.expr.core.ExpressionEvaluatorBuilder;
+import com.google.common.collect.HashBasedTable;
+import com.murphyl.dynamic.Feature;
 import com.networknt.schema.JsonSchema;
 import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
@@ -37,11 +36,25 @@ public final class Environments {
     public static final int JOB_SCHEMA_ARG_INDEX = 1;
 
     private static final JsonSchemaFactory JSON_SCHEMA_FACTORY;
-    private static final ExpressionEvaluatorBuilder EXPR_EVALUATOR_BUILDER;
+
+    private static final HashBasedTable<Class, String, Feature> DYNAMIC_FEATURE = HashBasedTable.create();
 
     static {
         JSON_SCHEMA_FACTORY = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
-        EXPR_EVALUATOR_BUILDER = new ExpressionEvaluatorBuilder();
+
+        Iterator<Feature> featureIterator = ServiceLoader.load(Feature.class).iterator();
+        while (featureIterator.hasNext()) {
+            Feature feature = featureIterator.next();
+            Class group = feature.group();
+            logger.info("dynamic feature({}) group by ({}) with alias {}", feature, group.getCanonicalName(), feature.alias());
+            for (String alias : feature.alias()) {
+                DYNAMIC_FEATURE.put(feature.group(), alias, feature);
+            }
+        }
+    }
+
+    public static <T extends Feature> T getFeature(Class<T> group, String unique) {
+        return (T) DYNAMIC_FEATURE.get(group, unique);
     }
 
     /**
@@ -69,13 +82,13 @@ public final class Environments {
         return null;
     }
 
-    public static synchronized  <T> Map<String, T> loadService(String name, Class<T> tClass) {
+    public static synchronized <T extends Feature> Map<String, T> loadService(String name, Class<T> tClass) {
         Iterator<T> factories = loadServices(tClass);
         Map<String, T> result = new ConcurrentHashMap<>();
         T service;
         while (factories.hasNext()) {
             service = factories.next();
-            String[] alias = ReflectUtils.getAlias(service);
+            String[] alias = service.alias();
             if (ArrayUtils.isEmpty(alias)) {
                 continue;
             }
@@ -87,7 +100,7 @@ public final class Environments {
         return result;
     }
 
-    public static <T> Iterator<T>  loadServices(Class<T> tClass) {
+    public static <T> Iterator<T> loadServices(Class<T> tClass) {
         return ServiceLoader.load(tClass).iterator();
     }
 
@@ -95,8 +108,5 @@ public final class Environments {
         return JSON_SCHEMA_FACTORY.getSchema(getResourceAsStream(schemaUri));
     }
 
-    public static ExpressionEvaluator getExprEvaluator(String engine) {
-        return EXPR_EVALUATOR_BUILDER.engine(engine).build();
-    }
 
 }

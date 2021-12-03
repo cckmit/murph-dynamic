@@ -16,4 +16,12 @@
         <maven.compiler.target>12</maven.compiler.target>
     </properties>
 
+    <dependencies>
+        <dependency>
+            <groupId>com.murphyl</groupId>
+            <artifactId>murph-dynamic-x</artifactId>
+            <version>1.0</version>
+        </dependency>
+    </dependencies>
+
 </project>

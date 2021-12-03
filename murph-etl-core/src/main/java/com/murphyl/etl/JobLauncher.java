@@ -7,7 +7,6 @@ import com.murphyl.etl.support.Environments;
 import com.murphyl.etl.support.JobStatus;
 import com.murphyl.etl.task.TaskSchema;
 import com.murphyl.etl.task.TaskStepSchema;
-import com.murphyl.etl.task.children.TaskChildrenManager;
 import com.murphyl.etl.task.children.extractor.Extractor;
 import com.murphyl.etl.task.children.loader.Loader;
 import com.murphyl.etl.task.children.transformer.Transformer;
@@ -19,9 +18,14 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.stream.Stream;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.UUID;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 任务 - 执行器
@@ -40,19 +44,20 @@ public final class JobLauncher implements Callable<JobStatus> {
     private static ExpressionEvaluator exprEvaluator;
 
     static {
-        exprEvaluator = Environments.getExprEvaluator(EXPRESSION_RESOLVER);
+        exprEvaluator = Environments.getFeature(ExpressionEvaluator.class, EXPRESSION_RESOLVER);
+        exprEvaluator.setUdf(null);
     }
 
     private UUID uuid;
-    private UUID workflow;
+    private UUID workflowId;
     private String[] args;
 
     public JobLauncher(UUID uuid, String... args) {
         this(UUID.randomUUID(), uuid, args);
     }
 
-    protected JobLauncher(UUID workflow, UUID uuid, String... args) {
-        this.workflow = workflow;
+    protected JobLauncher(UUID workflowId, UUID uuid, String... args) {
+        this.workflowId = workflowId;
         this.uuid = uuid;
         this.args = args;
     }
@@ -60,16 +65,16 @@ public final class JobLauncher implements Callable<JobStatus> {
     @Override
     public JobStatus call() {
         if (ArrayUtils.isEmpty(args)) {
-            logger.error("workflow({}) task({}) invalid args", workflow, uuid);
+            logger.error("workflow({}) task({}) invalid args", workflowId, uuid);
             return JobStatus.CLI_ARGS_EMPTY;
         }
         String ts = ArrayUtils.get(args, Environments.CLI_TS_ARG_INDEX);
         String file = ArrayUtils.get(args, Environments.JOB_SCHEMA_ARG_INDEX);
         if (null == file) {
-            logger.error("workflow({}) task({}) invalid args", workflow, uuid);
+            logger.error("workflow({}) task({}) invalid args", workflowId, uuid);
             return JobStatus.CLI_ARGS_LOST_SCHEMA;
         }
-        logger.info("workflow({}) task({}) fire at: {}", workflow, uuid, ts);
+        logger.info("workflow({}) task({}) fire at: {}", workflowId, uuid, ts);
         return execute(JobSchemaManager.parse(file));
     }
 
@@ -86,19 +91,19 @@ public final class JobLauncher implements Callable<JobStatus> {
                 .map((task) -> createTaskFuture(params, task))
                 .toArray(CompletableFuture[]::new);
         CompletableFuture<JobStatus> future = CompletableFuture.allOf(tasks).thenApply(Void -> {
-            logger.info("workflow({}) job({}) all task completed", workflow, uuid);
+            logger.info("workflow({}) job({}) all task completed", workflowId, uuid);
             return JobStatus.SUCCESS;
         });
         try {
             return future.get(2, TimeUnit.HOURS);
         } catch (Exception e) {
-            logger.info("workflow({}) job({}) execute error", ExceptionUtils.getRootCause(e));
+            logger.info("workflow({}) job({}) execute error", workflowId, uuid, ExceptionUtils.getRootCause(e));
             return JobStatus.FAILURE;
         }
     }
 
     private CompletableFuture createTaskFuture(Map<String, String> params, TaskSchema task) {
-        logger.info("workflow({}) job({}) task({}) [{}] prepared", workflow, uuid, UUID.randomUUID(), task.getName());
+        logger.info("workflow({}) job({}) task({}) [{}] prepared", workflowId, uuid, UUID.randomUUID(), task.getName());
         Map<String, Object> jobParams = Maps.newHashMap();
         for (Map.Entry<String, String> entry : params.entrySet()) {
             jobParams.put(entry.getKey(), exprEvaluator.eval(StringUtils.trimToNull(entry.getValue())));
@@ -109,7 +114,7 @@ public final class JobLauncher implements Callable<JobStatus> {
                         return null;
                     }
                     String extractorType = extractorSchema.getProperty("type");
-                    Extractor extractorInstance = TaskChildrenManager.getExtractor(extractorType);
+                    Extractor extractorInstance = Environments.getFeature(Extractor.class, extractorType);
                     if (null == extractorInstance) {
                         throw new IllegalStateException("extract data error, no matched extractor: " + extractorType);
                     } else {
@@ -129,7 +134,7 @@ public final class JobLauncher implements Callable<JobStatus> {
                     Transformer transformerInstance;
                     for (TaskStepSchema transformerSchema : transformerSchemaArr) {
                         transformerType = transformerSchema.getProperty("type");
-                        transformerInstance = TaskChildrenManager.getTransformer(transformerType);
+                        transformerInstance = Environments.getFeature(Transformer.class, transformerType);
                         if (null == transformerInstance) {
                             throw new IllegalStateException("transform data error, no matched transformer: " + transformerType);
                         } else {
@@ -145,7 +150,7 @@ public final class JobLauncher implements Callable<JobStatus> {
                     } else {
                         TaskStepSchema loaderSchema = task.getLoader();
                         String loaderType = loaderSchema.getProperty("type");
-                        Loader loaderInstance = TaskChildrenManager.getLoader(loaderType);
+                        Loader loaderInstance = Environments.getFeature(Loader.class, loaderType);
                         if (null == loaderInstance) {
                             throw new IllegalStateException("load data error, no matched loader: " + loaderType);
                         } else {

@@ -1,5 +1,6 @@
 package com.murphyl.etl.schema.parser;
 
+import com.murphyl.dynamic.Feature;
 import com.murphyl.etl.job.JobSchema;
 
 /**
@@ -8,7 +9,7 @@ import com.murphyl.etl.job.JobSchema;
  * @date: 2021/11/11 13:15
  * @author: murph
  */
-public interface JobSchemaParser {
+public interface JobSchemaParser extends Feature {
 
     /**
      * 解析配置文件

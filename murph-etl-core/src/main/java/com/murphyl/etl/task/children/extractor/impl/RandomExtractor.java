@@ -2,8 +2,9 @@ package com.murphyl.etl.task.children.extractor.impl;
 
 import com.google.common.primitives.Ints;
 import com.murphyl.dataframe.Dataframe;
+import com.murphyl.dynamic.Group;
+import com.murphyl.dynamic.Qualifier;
 import com.murphyl.etl.support.Environments;
-import com.murphyl.etl.support.Qualifier;
 import com.murphyl.etl.task.children.extractor.Extractor;
 import com.murphyl.etl.task.children.extractor.model.RandomExtractorSchema;
 import com.murphyl.etl.utils.Serializers;
@@ -23,7 +24,8 @@ import java.util.Properties;
  * @date: 2021/12/2 15:53
  * @author: murph
  */
-@Qualifier("random")
+@Group(Extractor.class)
+@Qualifier({"random"})
 public class RandomExtractor implements Extractor {
 
     private static final Logger logger = LoggerFactory.getLogger(RandomExtractor.class);
@@ -47,7 +49,8 @@ public class RandomExtractor implements Extractor {
             throw new IllegalStateException("extractor schema lost columns");
         }
         // 表达式处理起
-        ExpressionEvaluator expressionEvaluator = Environments.getExprEvaluator(schema.getEngine());
+        ExpressionEvaluator expressionEvaluator = Environments.getFeature(ExpressionEvaluator.class, schema.getEngine());
+        expressionEvaluator.setUdf(null);
         logger.info("use [{}] expression evaluator generate {} rows random data", expressionEvaluator, batchSize);
         // 列配置
         List<RandomExtractorSchema.Column> columns = schema.getColumns();

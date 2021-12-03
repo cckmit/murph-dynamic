@@ -1,7 +1,9 @@
-package com.murphyl.etl.schema.parser;
+package com.murphyl.etl.schema.parser.impl;
 
+import com.murphyl.dynamic.Group;
+import com.murphyl.dynamic.Qualifier;
 import com.murphyl.etl.job.JobSchema;
-import com.murphyl.etl.support.Qualifier;
+import com.murphyl.etl.schema.parser.JobSchemaParser;
 import com.murphyl.etl.task.TaskSchema;
 import com.murphyl.etl.task.TaskStepSchema;
 import com.murphyl.etl.utils.XmlUtils;
@@ -22,6 +24,7 @@ import java.util.stream.IntStream;
  * @date: 2021/11/11 13:16
  * @author: murph
  */
+@Group(JobSchemaParser.class)
 @Qualifier({"xml"})
 public class XmlJobSchemaParser implements JobSchemaParser {
 

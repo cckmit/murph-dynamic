@@ -2,7 +2,8 @@ package com.murphyl.etl.task.children.loader.impl;
 
 import com.google.common.primitives.Ints;
 import com.murphyl.dataframe.Dataframe;
-import com.murphyl.etl.support.Qualifier;
+import com.murphyl.dynamic.Group;
+import com.murphyl.dynamic.Qualifier;
 import com.murphyl.etl.task.children.loader.Loader;
 import de.vandermeer.asciitable.*;
 import de.vandermeer.skb.interfaces.transformers.textformat.TextAlignment;
@@ -18,7 +19,8 @@ import java.util.Properties;
  * @date: 2021/12/2 15:56
  * @author: murph
  */
-@Qualifier({"console", "stdout", "system.out", "log", "logger"})
+@Group(Loader.class)
+@Qualifier({"console", "stdout", "logger", "system.out"})
 public class ConsoleLoader implements Loader {
 
     private static final Logger logger = LoggerFactory.getLogger(ConsoleLoader.class);

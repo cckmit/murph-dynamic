@@ -63,15 +63,12 @@ public final class WorkflowLauncher implements Callable<JobStatus> {
         }
         CountDownLatch latch = new CountDownLatch(files.length);
         CompletableFuture[] futures = Stream.of(files).map(file -> {
-            logger.info("workflow({}) schema({}) prepared", uuid, file);
+            UUID jobId = UUID.randomUUID();
             return CompletableFuture.supplyAsync(() -> {
-                UUID taskId = UUID.randomUUID();
-                logger.info("workflow({}) task({}) schema({}) submitted", uuid, taskId, file);
-                return taskId;
-            }, EXECUTOR).thenApplyAsync(taskId -> {
                 try {
-                    return new JobLauncher(uuid, taskId, new String[]{ts, file}).call();
+                    return new JobLauncher(uuid, jobId, new String[]{ts, file}).call();
                 } finally {
+                    logger.info("workflow({}) job({}) schema({}) submitted", uuid, jobId, file);
                     latch.countDown();
                 }
             }, JobLauncher.EXECUTOR);
