@@ -1,4 +1,4 @@
-package com.murphyl.etl.core;
+package com.murphyl.etl;
 
 import com.murphyl.etl.support.Environments;
 import com.murphyl.etl.support.JobStatus;

@@ -1,4 +1,4 @@
-package com.murphyl.etl.core;
+package com.murphyl.etl;
 
 import com.google.common.collect.Maps;
 import com.murphyl.etl.job.JobSchema;
@@ -13,14 +13,15 @@ import com.murphyl.etl.task.children.loader.Loader;
 import com.murphyl.etl.task.children.transformer.Transformer;
 import com.murphyl.etl.utils.ThreadPoolFactory;
 import com.murphyl.expr.core.ExpressionEvaluator;
-import com.murphyl.expr.core.ExpressionEvaluatorBuilder;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.stream.Stream;
 
 /**
  * 任务 - 执行器
@@ -76,28 +77,28 @@ public final class JobLauncher implements Callable<JobStatus> {
         if (null == schema) {
             return JobStatus.CLI_ARGS_EMPTY;
         }
-        List<TaskSchema> tasks = schema.getTasks();
-        if (null == tasks || tasks.isEmpty()) {
+        List<TaskSchema> taskSchemaList = schema.getTasks();
+        if (null == taskSchemaList || taskSchemaList.isEmpty()) {
             return JobStatus.JOB_NO_STEP;
         }
         Map<String, String> params = schema.getParams();
-        for (TaskSchema task : tasks) {
-            logger.info("workflow({}) task({}) job({}) [{}] prepared", workflow, uuid, UUID.randomUUID(), task.getName());
-            CompletableFuture future = createTaskFuture(params, task);
-            try {
-                future.get(2, TimeUnit.HOURS);
-            } catch (ExecutionException e) {
-                e.printStackTrace();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (TimeoutException e) {
-                e.printStackTrace();
-            }
+        CompletableFuture[] tasks = taskSchemaList.stream()
+                .map((task) -> createTaskFuture(params, task))
+                .toArray(CompletableFuture[]::new);
+        CompletableFuture<JobStatus> future = CompletableFuture.allOf(tasks).thenApply(Void -> {
+            logger.info("workflow({}) job({}) all task completed", workflow, uuid);
+            return JobStatus.SUCCESS;
+        });
+        try {
+            return future.get(2, TimeUnit.HOURS);
+        } catch (Exception e) {
+            logger.info("workflow({}) job({}) execute error", ExceptionUtils.getRootCause(e));
+            return JobStatus.FAILURE;
         }
-        return JobStatus.SUCCESS;
     }
 
     private CompletableFuture createTaskFuture(Map<String, String> params, TaskSchema task) {
+        logger.info("workflow({}) job({}) task({}) [{}] prepared", workflow, uuid, UUID.randomUUID(), task.getName());
         Map<String, Object> jobParams = Maps.newHashMap();
         for (Map.Entry<String, String> entry : params.entrySet()) {
             jobParams.put(entry.getKey(), exprEvaluator.eval(StringUtils.trimToNull(entry.getValue())));
@@ -137,7 +138,6 @@ public final class JobLauncher implements Callable<JobStatus> {
                             dataframe = transformerInstance.transform(jobParams, dataframe, props);
                         }
                     }
-
                     return dataframe;
                 }, EXECUTOR).thenAcceptAsync(dataframe -> {
                     if (null == dataframe) {
