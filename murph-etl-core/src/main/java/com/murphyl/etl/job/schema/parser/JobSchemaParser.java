@@ -1,7 +1,7 @@
-package com.murphyl.etl.schema.parser;
+package com.murphyl.etl.job.schema.parser;
 
 import com.murphyl.dynamic.Feature;
-import com.murphyl.etl.job.JobSchema;
+import com.murphyl.etl.job.schema.model.JobSchema;
 
 /**
  * 配置 - 构造门面

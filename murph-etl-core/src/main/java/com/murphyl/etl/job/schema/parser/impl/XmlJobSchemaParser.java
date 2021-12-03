@@ -1,9 +1,9 @@
-package com.murphyl.etl.schema.parser.impl;
+package com.murphyl.etl.job.schema.parser.impl;
 
 import com.murphyl.dynamic.Group;
 import com.murphyl.dynamic.Qualifier;
-import com.murphyl.etl.job.JobSchema;
-import com.murphyl.etl.schema.parser.JobSchemaParser;
+import com.murphyl.etl.job.schema.model.JobSchema;
+import com.murphyl.etl.job.schema.parser.JobSchemaParser;
 import com.murphyl.etl.task.TaskSchema;
 import com.murphyl.etl.task.TaskStepSchema;
 import com.murphyl.etl.utils.XmlUtils;

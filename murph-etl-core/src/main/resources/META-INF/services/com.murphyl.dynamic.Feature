@@ -1,8 +1,8 @@
 # job schema loaders
-com.murphyl.etl.schema.loader.impl.FilesystemJobSchemaLoader
+com.murphyl.etl.job.schema.loader.impl.FilesystemJobSchemaLoader
 
 # job schema parsers
-com.murphyl.etl.schema.parser.impl.XmlJobSchemaParser
+com.murphyl.etl.job.schema.parser.impl.XmlJobSchemaParser
 
 # extractors
 com.murphyl.etl.task.children.extractor.impl.RandomExtractor

@@ -1,9 +1,9 @@
-package com.murphyl.etl.schema.loader.impl;
+package com.murphyl.etl.job.schema.loader.impl;
 
 import com.murphyl.dynamic.Group;
 import com.murphyl.dynamic.Qualifier;
-import com.murphyl.etl.job.JobSchema;
-import com.murphyl.etl.schema.loader.JobSchemaLoader;
+import com.murphyl.etl.job.schema.model.JobSchema;
+import com.murphyl.etl.job.schema.loader.JobSchemaLoader;
 
 import java.util.List;
 

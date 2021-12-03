@@ -1,4 +1,4 @@
-package com.murphyl.etl.job;
+package com.murphyl.etl.job.schema.model;
 
 import com.murphyl.etl.task.TaskSchema;
 

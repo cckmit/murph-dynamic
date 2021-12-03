@@ -1,7 +1,7 @@
-package com.murphyl.etl.schema.loader;
+package com.murphyl.etl.job.schema.loader;
 
 import com.murphyl.dynamic.Feature;
-import com.murphyl.etl.job.JobSchema;
+import com.murphyl.etl.job.schema.model.JobSchema;
 
 import java.util.List;
 

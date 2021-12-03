@@ -1,7 +1,7 @@
-package com.murphyl.etl.schema;
+package com.murphyl.etl.job.schema;
 
-import com.murphyl.etl.job.JobSchema;
-import com.murphyl.etl.schema.parser.JobSchemaParser;
+import com.murphyl.etl.job.schema.model.JobSchema;
+import com.murphyl.etl.job.schema.parser.JobSchemaParser;
 import com.murphyl.etl.support.Environments;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

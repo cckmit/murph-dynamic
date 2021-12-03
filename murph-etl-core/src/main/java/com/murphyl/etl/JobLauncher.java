@@ -1,8 +1,8 @@
 package com.murphyl.etl;
 
 import com.google.common.collect.Maps;
-import com.murphyl.etl.job.JobSchema;
-import com.murphyl.etl.schema.JobSchemaManager;
+import com.murphyl.etl.job.schema.model.JobSchema;
+import com.murphyl.etl.job.schema.JobSchemaManager;
 import com.murphyl.etl.support.Environments;
 import com.murphyl.etl.support.JobStatus;
 import com.murphyl.etl.task.TaskSchema;
