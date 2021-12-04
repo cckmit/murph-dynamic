@@ -89,7 +89,7 @@
         </extractor>
         <transformer type="filter" engine="jexl2">
             <![CDATA[
-                ${dataframe:column(id)}
+                ${dataframe:column("id")}
             ]]>
         </transformer>
         <loader type="csv" batchSize="100" target="/text.csv" />

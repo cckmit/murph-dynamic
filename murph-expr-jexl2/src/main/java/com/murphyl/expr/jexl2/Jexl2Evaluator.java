@@ -4,6 +4,7 @@ import com.murphyl.dynamic.Qualifier;
 import com.murphyl.expr.core.ExpressionEvaluator;
 import com.murphyl.expr.core.UserDefinedFunction;
 import com.murphyl.expr.support.PreparedExpressions;
+import org.apache.commons.jexl2.Expression;
 import org.apache.commons.jexl2.JexlEngine;
 import org.apache.commons.jexl2.MapContext;
 
@@ -28,10 +29,7 @@ public class Jexl2Evaluator implements ExpressionEvaluator {
 
     public Jexl2Evaluator() {
         this.engine = new JexlEngine();
-    }
 
-    @Override
-    public void setUdf(Map<String, Class> udfMapper) {
         Map<String, Object> functions = new HashMap<>();
         functions.put(null, PreparedExpressions.class);
         Iterator<UserDefinedFunction> udfIterator = ServiceLoader.load(UserDefinedFunction.class).iterator();
@@ -46,23 +44,23 @@ public class Jexl2Evaluator implements ExpressionEvaluator {
         this.engine.setFunctions(functions);
     }
 
-    @Override
     public Object eval(String expr) {
         return eval(expr, null);
     }
 
     @Override
     public Object eval(String expr, Map<String, Object> params) {
-        if (null == expr || !EXPR_PATTERN.matcher(expr).find()) {
-            return expr;
+        String expression = (null == expr || expr.isBlank()) ? null : expr.trim();
+        if (null == expression || !EXPR_PATTERN.matcher(expression).find()) {
+            return expression;
         }
-        String temp = expr.substring(2, expr.length() - 1);
         MapContext context = new MapContext();
-        if (null != params) {
+        if (null != params && !params.isEmpty()) {
             for (Map.Entry<String, Object> entry : params.entrySet()) {
                 context.set(entry.getKey(), entry.getValue());
             }
         }
+        String temp = expression.substring(2, expression.length() - 1);
         return engine.createExpression(temp).evaluate(context);
     }
 }

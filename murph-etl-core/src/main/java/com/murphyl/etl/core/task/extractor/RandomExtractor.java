@@ -52,7 +52,6 @@ public class RandomExtractor implements Extractor {
         }
         // 表达式处理起
         ExpressionEvaluator expressionEvaluator = Environments.getFeature(ExpressionEvaluator.class, engine);
-        expressionEvaluator.setUdf(null);
         logger.info("use [{}] expression evaluator generate {} rows random data", expressionEvaluator, batchSize);
         // 列配置
         List<RandomExtractorSchema.Column> columns = schema.getColumns();

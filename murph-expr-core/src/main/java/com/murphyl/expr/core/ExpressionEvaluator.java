@@ -29,11 +29,4 @@ public interface ExpressionEvaluator extends Feature {
      */
     Object eval(String expr, Map<String, Object> params);
 
-    /**
-     * 配置 UDF
-     *
-     * @param udfMapper
-     */
-    void setUdf(Map<String, Class> udfMapper);
-
 }

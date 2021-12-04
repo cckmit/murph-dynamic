@@ -45,7 +45,6 @@ public final class JobLauncher implements Callable<JobStatus> {
 
     static {
         exprEvaluator = Environments.getFeature(ExpressionEvaluator.class, EXPRESSION_RESOLVER);
-        exprEvaluator.setUdf(null);
     }
 
     private UUID uuid;
