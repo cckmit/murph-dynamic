@@ -1,8 +1,8 @@
 # job schema loaders
-com.murphyl.etl.job.schema.loader.JdbcJobSchemaLoader
+com.murphyl.etl.jdbc.job.schema.loader.JdbcJobSchemaLoader
 
 # extractors
-com.murphyl.etl.task.extractor.JdbcExtractor
+com.murphyl.etl.jdbc.task.extractor.JdbcExtractor
 
 # loaders
-com.murphyl.etl.task.loader.JdbcLoader
+com.murphyl.etl.jdbc.task.loader.JdbcLoader

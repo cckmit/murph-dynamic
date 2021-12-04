@@ -6,10 +6,9 @@
         <assign name="c" value="${timestamp()}" />
     </params>
     <task name="hello-0001" descrption="控制台显示随机数据">
-        <extractor type="random" batchSize="300">
+        <extractor type="random" batchSize="300" engine="jexl">
             <![CDATA[
                 {
-                    "engine": "jexl",
                     "columns": [
                         {
                             "name": "id",
@@ -31,10 +30,9 @@
         <loader type="console" batchSize="100" />
     </task>
     <task name="hello-0002" descrption="生成随机数据写入文本">
-        <extractor type="random" batchSize="300">
+        <extractor type="random" batchSize="300" engine="jexl">
             <![CDATA[
                 {
-                    "engine": "jexl",
                     "columns": [
                         {
                             "name": "id",
@@ -59,6 +57,41 @@
                 }
             ]]>
         </extractor>
+        <loader type="csv" batchSize="100" target="/text.csv" />
+    </task>
+    <task name="hello-0002" descrption="生成随机数据过滤器">
+        <extractor type="random" batchSize="300" engine="jexl">
+            <![CDATA[
+                {
+                    "columns": [
+                        {
+                            "name": "id",
+                            "expr": "${idGenerator.next()}",
+                            "extra": {
+                                "idGenerator": "${seq()}"
+                            }
+                        }, {
+                            "name": "name",
+                            "expr": "${uuid()}"
+                        }, {
+                            "name": "ts",
+                            "expr": "${timestamp()}"
+                        }, {
+                            "name": "other",
+                            "expr": "hello, \"world"
+                        }, {
+                            "name": "中文",
+                            "expr": "测试UTF-8中文"
+                        }
+                    ]
+                }
+            ]]>
+        </extractor>
+        <transformer type="filter" engine="jexl2">
+            <![CDATA[
+                ${dataframe:column(id)}
+            ]]>
+        </transformer>
         <loader type="csv" batchSize="100" target="/text.csv" />
     </task>
 </etl-job>

@@ -1,4 +1,4 @@
-package com.murphyl.etl.consts;
+package com.murphyl.etl.support;
 
 /**
  * -

@@ -3,13 +3,8 @@
     "type": "object",
     "title": "etl-task-random-extractor",
     "description": "create date random",
-    "required": [ "engine","columns" ],
+    "required": [ "columns" ],
     "properties": {
-        "engine": {
-            "description": "可先数据生成引擎",
-            "type": "string",
-            "enum": ["jexl"]
-        },
         "size": {
             "description": "生成数据的记录数",
             "type": "integer",

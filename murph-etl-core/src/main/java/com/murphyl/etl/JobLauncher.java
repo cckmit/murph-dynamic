@@ -1,15 +1,15 @@
 package com.murphyl.etl;
 
 import com.google.common.collect.Maps;
-import com.murphyl.etl.job.schema.JobSchema;
-import com.murphyl.etl.job.schema.JobSchemaManager;
-import com.murphyl.etl.consts.Environments;
-import com.murphyl.etl.consts.JobStatus;
-import com.murphyl.etl.task.TaskSchema;
-import com.murphyl.etl.task.TaskStepSchema;
-import com.murphyl.etl.task.extractor.Extractor;
-import com.murphyl.etl.task.loader.Loader;
-import com.murphyl.etl.task.transformer.Transformer;
+import com.murphyl.etl.core.job.schema.JobSchema;
+import com.murphyl.etl.core.job.schema.JobSchemaManager;
+import com.murphyl.etl.core.task.TaskSchema;
+import com.murphyl.etl.core.task.TaskStepSchema;
+import com.murphyl.etl.core.task.extractor.Extractor;
+import com.murphyl.etl.core.task.loader.Loader;
+import com.murphyl.etl.core.task.transformer.Transformer;
+import com.murphyl.etl.support.Environments;
+import com.murphyl.etl.support.JobStatus;
 import com.murphyl.etl.utils.ThreadPoolFactory;
 import com.murphyl.expr.core.ExpressionEvaluator;
 import org.apache.commons.lang3.ArrayUtils;
@@ -119,7 +119,10 @@ public final class JobLauncher implements Callable<JobStatus> {
                         throw new IllegalStateException("extract data error, no matched extractor: " + extractorType);
                     } else {
                         logger.info("use [{}] extract data", extractorInstance);
-                        return extractorInstance.extract(extractorSchema.getDsl(), jobParams, extractorSchema.getProperties());
+                        Properties stepParams = new Properties();
+                        stepParams.putAll(jobParams);
+                        stepParams.putAll(extractorSchema.getProperties());
+                        return extractorInstance.extract(extractorSchema.getDsl(), stepParams);
                     }
                 }, EXECUTOR)
                 .thenApplyAsync(dataframe -> {
@@ -138,9 +141,11 @@ public final class JobLauncher implements Callable<JobStatus> {
                         if (null == transformerInstance) {
                             throw new IllegalStateException("transform data error, no matched transformer: " + transformerType);
                         } else {
-                            Properties props = transformerSchema.getProperties();
-                            logger.info("use [{}] transform data: {}", transformerInstance, props);
-                            dataframe = transformerInstance.transform(jobParams, dataframe, props);
+                            Properties stepParams = new Properties();
+                            stepParams.putAll(jobParams);
+                            stepParams.putAll(transformerSchema.getProperties());
+                            logger.info("use [{}] transform data", transformerInstance);
+                            dataframe = transformerInstance.transform(transformerSchema.getDsl(), dataframe, stepParams);
                         }
                     }
                     return dataframe;
@@ -154,8 +159,11 @@ public final class JobLauncher implements Callable<JobStatus> {
                         if (null == loaderInstance) {
                             throw new IllegalStateException("load data error, no matched loader: " + loaderType);
                         } else {
+                            Properties stepParams = new Properties();
+                            stepParams.putAll(jobParams);
+                            stepParams.putAll(loaderSchema.getProperties());
                             logger.info("use [{}] load data", loaderInstance);
-                            loaderInstance.load(jobParams, dataframe, loaderSchema.getProperties());
+                            loaderInstance.load(loaderSchema.getDsl(), dataframe, stepParams);
                         }
                     }
                 }, EXECUTOR);

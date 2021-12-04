@@ -2,12 +2,15 @@ package com.murphyl.expr.jexl2;
 
 import com.murphyl.dynamic.Qualifier;
 import com.murphyl.expr.core.ExpressionEvaluator;
+import com.murphyl.expr.core.UserDefinedFunction;
 import com.murphyl.expr.support.PreparedExpressions;
 import org.apache.commons.jexl2.JexlEngine;
 import org.apache.commons.jexl2.MapContext;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.regex.Pattern;
 
 /**
@@ -31,13 +34,14 @@ public class Jexl2Evaluator implements ExpressionEvaluator {
     public void setUdf(Map<String, Class> udfMapper) {
         Map<String, Object> functions = new HashMap<>();
         functions.put(null, PreparedExpressions.class);
-        if (null != udfMapper) {
-            if (udfMapper.containsKey(null)) {
-                udfMapper.remove(null);
+        Iterator<UserDefinedFunction> udfIterator = ServiceLoader.load(UserDefinedFunction.class).iterator();
+        UserDefinedFunction udf;
+        while (udfIterator.hasNext()) {
+            udf = udfIterator.next();
+            if (null == udf.namespace()) {
+                continue;
             }
-            if (!udfMapper.isEmpty()) {
-                functions.putAll(udfMapper);
-            }
+            functions.put(udf.namespace(), udf);
         }
         this.engine.setFunctions(functions);
     }

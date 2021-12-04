@@ -1,8 +1,8 @@
 # job schema loaders
-com.murphyl.etl.job.schema.loader.RestJobSchemaLoader
+com.murphyl.etl.rest.job.schema.loader.RestJobSchemaLoader
 
 # extractors
-com.murphyl.etl.task.extractor.RestExtractor
+com.murphyl.etl.rest.task.extractor.RestExtractor
 
 # loaders
-com.murphyl.etl.task.loader.RestLoader
+com.murphyl.etl.rest.task.loader.RestLoader
