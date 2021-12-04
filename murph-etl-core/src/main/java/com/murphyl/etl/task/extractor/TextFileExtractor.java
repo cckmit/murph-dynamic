@@ -17,7 +17,7 @@ public class TextFileExtractor implements Extractor {
 
     @Override
     public Dataframe extract(String dsl, Map<String, Object> jobParams, Properties stepProps) {
-        return new Dataframe(0, 0);
+        return new Dataframe(new String[0], 0);
     }
 
 }

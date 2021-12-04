@@ -51,10 +51,10 @@ public class RandomExtractor implements Extractor {
         logger.info("use [{}] expression evaluator generate {} rows random data", expressionEvaluator, batchSize);
         // 列配置
         List<RandomExtractorSchema.Column> columns = schema.getColumns();
-        // 结果
-        Dataframe result = new Dataframe(columns.size(), batchSize);
         // 数据帧标题
-        result.setHeaders(columns.stream().map(col -> col.getName()).toArray(String[]::new));
+        String[] headers = columns.stream().map(col -> col.getName()).toArray(String[]::new);
+        // 结果
+        Dataframe result = new Dataframe(headers, batchSize);
         Object value;
         Map<String, Object> extra;
         RandomExtractorSchema.Column column;

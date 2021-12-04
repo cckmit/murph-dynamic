@@ -1,5 +1,8 @@
 package com.murphyl.dataframe;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * 数据帧
  *
@@ -11,12 +14,14 @@ public class Dataframe {
     private String[] headers;
     private final Object[][] values;
 
-    public Dataframe(int width, int height) {
-        this.values = new Object[height][width];
+    public Dataframe(String[] headers, int height) {
+        this.headers = headers;
+        this.values = new Object[height][headers.length];
     }
 
-    public void setHeaders(String[] headers) {
+    public Dataframe(String[] headers, Object[][] values) {
         this.headers = headers;
+        this.values = values;
     }
 
     public String[] getHeaders() {
@@ -36,7 +41,19 @@ public class Dataframe {
     }
 
     public Object[] row(int rowIndex) {
-        return this.values[rowIndex];
+        return values[rowIndex];
+    }
+
+    public Dataframe select(String... columns) {
+        List<String> labels = Arrays.asList(headers);
+        int[] selected = Arrays.stream(columns).mapToInt(column -> labels.indexOf(column)).toArray();
+        Dataframe df = new Dataframe(columns, height());
+        for (int rowIndex = 0; rowIndex < values.length; rowIndex++) {
+            for (int columnIndex = 0; columnIndex < columns.length; columnIndex++) {
+                df.setValue(rowIndex, columnIndex, values[rowIndex][selected[columnIndex]]);
+            }
+        }
+        return df;
     }
 
 }
