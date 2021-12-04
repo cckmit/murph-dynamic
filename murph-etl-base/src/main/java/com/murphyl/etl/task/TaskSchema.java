@@ -10,7 +10,6 @@ import java.util.Map;
  */
 public class TaskSchema {
 
-    private String unique;
     private String name;
     private String[] parents;
     private Map<String, String> params;
@@ -19,13 +18,6 @@ public class TaskSchema {
     private TaskStepSchema[] transformers;
     private TaskStepSchema loader;
 
-    public String getUnique() {
-        return unique;
-    }
-
-    public void setUnique(String unique) {
-        this.unique = unique;
-    }
 
     public String getName() {
         return name;

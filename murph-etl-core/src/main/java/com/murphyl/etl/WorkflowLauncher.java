@@ -1,7 +1,7 @@
 package com.murphyl.etl;
 
-import com.murphyl.etl.support.Environments;
-import com.murphyl.etl.support.JobStatus;
+import com.murphyl.etl.consts.Environments;
+import com.murphyl.etl.consts.JobStatus;
 import com.murphyl.etl.utils.ThreadPoolFactory;
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;

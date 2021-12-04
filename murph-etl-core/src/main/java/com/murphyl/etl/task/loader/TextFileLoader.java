@@ -4,7 +4,6 @@ import com.google.common.escape.Escaper;
 import com.google.common.escape.Escapers;
 import com.google.common.primitives.Ints;
 import com.murphyl.dataframe.Dataframe;
-import com.murphyl.dynamic.Group;
 import com.murphyl.dynamic.Qualifier;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -24,7 +23,6 @@ import java.util.stream.Stream;
  * @date: 2021/12/2 15:55
  * @author: murph
  */
-@Group(Loader.class)
 @Qualifier({"text-file", "file", "csv"})
 public class TextFileLoader implements Loader {
 

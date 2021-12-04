@@ -1,7 +1,7 @@
 package com.murphyl.etl.job.schema;
 
 import com.murphyl.etl.job.schema.parser.JobSchemaParser;
-import com.murphyl.etl.support.Environments;
+import com.murphyl.etl.consts.Environments;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,12 +16,6 @@ import java.util.Map;
 public final class JobSchemaManager {
 
     private static final Logger logger = LoggerFactory.getLogger(JobSchemaManager.class);
-
-    private static final Map<String, JobSchemaParser> REGISTERED_SCHEMA_PARSERS;
-
-    static {
-        REGISTERED_SCHEMA_PARSERS = Environments.loadService("job schema parser", JobSchemaParser.class);
-    }
 
     public static JobSchema parse(String filepath) {
         int dotIndex = filepath.lastIndexOf('.');

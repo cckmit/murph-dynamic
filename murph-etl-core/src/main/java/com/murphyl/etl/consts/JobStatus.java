@@ -1,4 +1,4 @@
-package com.murphyl.etl.support;
+package com.murphyl.etl.consts;
 
 /**
  * 任务 - 状态码 - https://developer.mozilla.org/en-US/docs/Web/HTTP/Status

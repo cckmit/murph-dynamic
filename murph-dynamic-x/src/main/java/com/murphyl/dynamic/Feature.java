@@ -8,17 +8,6 @@ package com.murphyl.dynamic;
 public interface Feature {
 
     /**
-     * 分组
-     * @return
-     */
-    default Class group() {
-        if (!getClass().isAnnotationPresent(Group.class)) {
-            return null;
-        }
-        return getClass().getDeclaredAnnotation(Group.class).value();
-    }
-
-    /**
      * 别名
      *
      * @return

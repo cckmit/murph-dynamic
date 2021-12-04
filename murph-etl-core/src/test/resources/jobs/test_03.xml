@@ -5,7 +5,7 @@
         <assign name="b" value="${format(date_add(now(), -10, 'YEARS'), 'yyyy-MM-dd HH:mm:ss.SSS')}" />
         <assign name="c" value="${timestamp()}" />
     </params>
-    <task id="hello-0001" name="控制台显示随机数据">
+    <task name="hello-0001" descrption="控制台显示随机数据">
         <extractor type="random" batchSize="300">
             <![CDATA[
                 {
@@ -30,7 +30,7 @@
         </extractor>
         <loader type="console" batchSize="100" />
     </task>
-    <task id="hello-0002" name="生成随机数据写入文本">
+    <task name="hello-0002" descrption="生成随机数据写入文本">
         <extractor type="random" batchSize="300">
             <![CDATA[
                 {

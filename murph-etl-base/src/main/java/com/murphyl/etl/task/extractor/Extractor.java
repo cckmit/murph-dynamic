@@ -16,6 +16,7 @@ public interface Extractor extends Feature {
 
     /**
      * 抽取数据
+     *
      * @param dsl
      * @param jobParams
      * @param stepProps

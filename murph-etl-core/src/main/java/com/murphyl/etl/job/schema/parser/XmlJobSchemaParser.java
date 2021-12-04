@@ -1,7 +1,7 @@
 package com.murphyl.etl.job.schema.parser;
 
-import com.murphyl.dynamic.Group;
 import com.murphyl.dynamic.Qualifier;
+import com.murphyl.etl.consts.ETL;
 import com.murphyl.etl.job.schema.JobSchema;
 import com.murphyl.etl.task.TaskSchema;
 import com.murphyl.etl.task.TaskStepSchema;
@@ -23,35 +23,28 @@ import java.util.stream.IntStream;
  * @date: 2021/11/11 13:16
  * @author: murph
  */
-@Group(JobSchemaParser.class)
 @Qualifier({"xml"})
 public class XmlJobSchemaParser implements JobSchemaParser {
 
-    private static final String JOB_NAME_XPATH = "/etl-job/@name";
-    private static final String JOB_TASKS_XPATH = "/etl-job/task";
-    private static final String JOB_PARAMS_XPATH = "/etl-job/params/assign";
-
-    private static final String TASK_EXTRACTOR_XPATH = "extractor";
-    private static final String TASK_TRANSFORMERS_XPATH = "transformer";
-    private static final String TASK_LOADER_XPATH = "loader";
-
     private static final String NODE_NAME_XPATH = "@name";
-    private static final String NODE_UNIQUE_XPATH = "@id";
     private static final String NODE_VALUE_XPATH = "@value";
+
     private static final String NODE_PARENTS_XPATH = "@parents";
+
+    public static final String XPATH_OF_ETL_JOB_NAME = String.format("%s/%s", ETL.XPATH_OF_ETL_JOB, NODE_NAME_XPATH);
 
     @Override
     public JobSchema parse(final String unique) {
         Document document = XmlUtils.parse(unique);
         JobSchema schema = new JobSchema();
-        schema.setName(XmlUtils.xpathText(document, JOB_NAME_XPATH));
+        schema.setName(XmlUtils.xpathText(document, XPATH_OF_ETL_JOB_NAME));
         schema.setParams(getJobParams(document));
         schema.setTasks(getJobTasks(document));
         return schema;
     }
 
     public List<TaskSchema> getJobTasks(Document document) {
-        NodeList tasks = XmlUtils.xpathList(document, JOB_TASKS_XPATH);
+        NodeList tasks = XmlUtils.xpathList(document, ETL.XPATH_OF_ETL_JOB_TASKS);
         List<TaskSchema> result = new ArrayList<>(tasks.getLength());
         for (int i = 0; i < tasks.getLength(); i++) {
             result.add(resolveTask(tasks.item(i)));
@@ -60,7 +53,7 @@ public class XmlJobSchemaParser implements JobSchemaParser {
     }
 
     public Map<String, String> getJobParams(Document document) {
-        NodeList params = XmlUtils.xpathList(document, JOB_PARAMS_XPATH);
+        NodeList params = XmlUtils.xpathList(document, ETL.XPATH_OF_ETL_JOB_PARAM);
         Map<String, String> result = new HashMap<>(params.getLength());
         Node param;
         for (int i = 0; i < params.getLength(); i++) {
@@ -73,17 +66,16 @@ public class XmlJobSchemaParser implements JobSchemaParser {
 
     private TaskSchema resolveTask(Node node) {
         TaskSchema task = new TaskSchema();
-        task.setUnique(XmlUtils.xpathAttr(node, NODE_UNIQUE_XPATH));
         task.setName(XmlUtils.xpathAttr(node, NODE_NAME_XPATH));
         String parents = XmlUtils.xpathText(node, NODE_PARENTS_XPATH);
         if (null != parents) {
             task.setParents(parents.split(","));
         }
         // extractor
-        Node extractor = XmlUtils.xpathNode(node, TASK_EXTRACTOR_XPATH);
+        Node extractor = XmlUtils.xpathNode(node, ETL.TASK_ROLE_EXTRACTOR);
         task.setExtractor(resolveTaskStepSchema(extractor));
         // transformers
-        NodeList transformers = XmlUtils.xpathList(node, TASK_TRANSFORMERS_XPATH);
+        NodeList transformers = XmlUtils.xpathList(node, ETL.TASK_ROLE_TRANSFORMER);
         if (null != transformers || transformers.getLength() > 0) {
             TaskStepSchema[] resolved = IntStream.range(0, transformers.getLength())
                     // 按照索引转换子模块
@@ -93,7 +85,7 @@ public class XmlJobSchemaParser implements JobSchemaParser {
             task.setTransformers(resolved);
         }
         // loader
-        Node loader = XmlUtils.xpathNode(node, TASK_LOADER_XPATH);
+        Node loader = XmlUtils.xpathNode(node, ETL.TASK_ROLE_LOADER);
         task.setLoader(resolveTaskStepSchema(loader));
         return task;
     }

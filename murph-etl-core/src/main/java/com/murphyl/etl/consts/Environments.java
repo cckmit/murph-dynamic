@@ -1,7 +1,8 @@
-package com.murphyl.etl.support;
+package com.murphyl.etl.consts;
 
 import com.google.common.collect.HashBasedTable;
 import com.murphyl.dynamic.Feature;
+import com.murphyl.etl.task.loader.Loader;
 import com.networknt.schema.JsonSchema;
 import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
@@ -45,10 +46,12 @@ public final class Environments {
         Iterator<Feature> featureIterator = ServiceLoader.load(Feature.class).iterator();
         while (featureIterator.hasNext()) {
             Feature feature = featureIterator.next();
-            Class group = feature.group();
-            logger.info("dynamic feature ({}) group by ({}) with alias {}", feature, group.getCanonicalName(), feature.alias());
-            for (String alias : feature.alias()) {
-                DYNAMIC_FEATURE.put(feature.group(), alias, feature);
+            Class[] interfaces = feature.getClass().getInterfaces();
+            for (Class group : interfaces) {
+                logger.info("dynamic feature ({}) group by ({}) with alias {}", feature, group.getCanonicalName(), feature.alias());
+                for (String alias : feature.alias()) {
+                    DYNAMIC_FEATURE.put(group, alias, feature);
+                }
             }
         }
     }

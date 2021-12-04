@@ -1,6 +1,5 @@
 package com.murphyl.etl.job.schema.loader;
 
-import com.murphyl.dynamic.Group;
 import com.murphyl.dynamic.Qualifier;
 import com.murphyl.etl.job.schema.JobSchema;
 
@@ -12,7 +11,6 @@ import java.util.List;
  * @date: 2021/11/16 10:39
  * @author: murph
  */
-@Group(JobSchemaLoader.class)
 @Qualifier({"filesystem", "fs"})
 public class FilesystemJobSchemaLoader implements JobSchemaLoader {
 
