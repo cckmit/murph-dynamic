@@ -2,8 +2,11 @@ package com.murphyl.etl.core.task.extractor;
 
 import com.murphyl.dataframe.Dataframe;
 import com.murphyl.dynamic.Qualifier;
+import com.p6spy.engine.spy.P6DataSource;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
+import java.net.URI;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +31,8 @@ public class JdbcExtractor implements Extractor {
 
     private Connection getDatabaseConnection(String url) {
         try {
-            return DriverManager.getConnection(url);
+            String replaced = StringUtils.joinWith(":p6spy:", StringUtils.split(url, ":", 2));
+            return DriverManager.getConnection(replaced);
         } catch (SQLException e) {
             throw new IllegalStateException("get jdbc connection error: " + url, ExceptionUtils.getRootCause(e));
         }
