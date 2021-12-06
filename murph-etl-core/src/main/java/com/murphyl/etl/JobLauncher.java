@@ -8,6 +8,7 @@ import com.murphyl.etl.core.task.extractor.Extractor;
 import com.murphyl.etl.core.task.loader.Loader;
 import com.murphyl.etl.core.task.transformer.Transformer;
 import com.murphyl.etl.support.Environments;
+import com.murphyl.etl.support.ExpressionSupport;
 import com.murphyl.etl.support.JobStatus;
 import com.murphyl.etl.utils.ThreadPoolFactory;
 import com.murphyl.expr.core.ExpressionEvaluator;
@@ -26,19 +27,13 @@ import java.util.concurrent.*;
  * @date: 2021/12/1 14:10
  * @author: murph
  */
-public final class JobLauncher implements Callable<JobStatus> {
+public final class JobLauncher implements Callable<JobStatus>, ExpressionSupport {
 
     private static final Logger logger = LoggerFactory.getLogger(JobLauncher.class);
 
     private final ExecutorService executor;
 
-    private static final String EXPRESSION_RESOLVER = "jexl";
-
-    private static ExpressionEvaluator exprEvaluator;
-
-    static {
-        exprEvaluator = Environments.getFeature(ExpressionEvaluator.class, EXPRESSION_RESOLVER);
-    }
+    private final ExpressionEvaluator exprEvaluator;
 
     private UUID workflowId;
     private UUID uuid;
@@ -51,7 +46,8 @@ public final class JobLauncher implements Callable<JobStatus> {
         int keepAliveMinutes = Environments.getInt("JOB_POOL_KEEP_ALIVE_MINUTE", 10);
         int queueSize = Environments.getInt("JOB_POOL_QUEUE_SIZE", 100);
         String poolNamePrefix = Environments.get("JOB_POOL_NAME_PREFIX", "etl-job");
-        executor = ThreadPoolFactory.create(corePoolSize, maxPoolSize, keepAliveMinutes, queueSize, poolNamePrefix);
+        this.exprEvaluator = getDefaultEngine();
+        this.executor = ThreadPoolFactory.create(corePoolSize, maxPoolSize, keepAliveMinutes, queueSize, poolNamePrefix);
     }
 
     public JobStatus launch(String... args) throws ExecutionException, InterruptedException, TimeoutException {
@@ -172,7 +168,7 @@ public final class JobLauncher implements Callable<JobStatus> {
                 }, executor);
     }
 
-    public void shutdown() {
+    protected void shutdown() {
         executor.shutdown();
     }
 

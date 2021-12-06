@@ -1,12 +1,12 @@
 package com.murphyl.etl.support;
 
 import com.google.common.collect.HashBasedTable;
-import com.google.common.primitives.Ints;
 import com.murphyl.dynamic.Feature;
 import com.networknt.schema.JsonSchema;
 import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
 import io.github.cdimascio.dotenv.Dotenv;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -62,14 +62,20 @@ public final class Environments {
             for (Class group : interfaces) {
                 logger.info("dynamic feature ({}) group by ({}) with alias {}", feature, group.getCanonicalName(), feature.alias());
                 for (String alias : feature.alias()) {
-                    DYNAMIC_FEATURE.put(group, alias, feature);
+                    if (StringUtils.isEmpty(alias)) {
+                        continue;
+                    }
+                    DYNAMIC_FEATURE.put(group, StringUtils.trim(alias), feature);
                 }
             }
         }
     }
 
     public static <T extends Feature> T getFeature(Class<T> group, String unique) {
-        return (T) DYNAMIC_FEATURE.get(group, unique);
+        if (StringUtils.isEmpty(unique)) {
+            return null;
+        }
+        return (T) DYNAMIC_FEATURE.get(group, StringUtils.trim(unique));
     }
 
     /**
