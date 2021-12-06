@@ -9,7 +9,7 @@ import com.murphyl.etl.core.task.loader.Loader;
 import com.murphyl.etl.core.task.transformer.Transformer;
 import com.murphyl.etl.support.Environments;
 import com.murphyl.etl.support.JobStatus;
-import com.murphyl.etl.support.expr.ExpressionSupport;
+import com.murphyl.etl.utils.task.ExprEvaluatorUtils;
 import com.murphyl.etl.utils.ThreadPoolFactory;
 import com.murphyl.expr.core.ExpressionEvaluator;
 import org.apache.commons.lang3.ArrayUtils;
@@ -27,7 +27,7 @@ import java.util.concurrent.*;
  * @date: 2021/12/1 14:10
  * @author: murph
  */
-public final class JobLauncher implements Callable<JobStatus>, ExpressionSupport {
+public final class JobLauncher implements Callable<JobStatus> {
 
     private static final Logger logger = LoggerFactory.getLogger(JobLauncher.class);
 
@@ -46,7 +46,7 @@ public final class JobLauncher implements Callable<JobStatus>, ExpressionSupport
         int keepAliveMinutes = Environments.getInt("JOB_POOL_KEEP_ALIVE_MINUTE", 10);
         int queueSize = Environments.getInt("JOB_POOL_QUEUE_SIZE", 100);
         String poolNamePrefix = Environments.get("JOB_POOL_NAME_PREFIX", "etl-job");
-        this.exprEvaluator = getDefaultEngine();
+        this.exprEvaluator = ExprEvaluatorUtils.getDefaultEngine();
         this.executor = ThreadPoolFactory.create(corePoolSize, maxPoolSize, keepAliveMinutes, queueSize, poolNamePrefix);
     }
 

@@ -19,9 +19,19 @@ public class Dataframe {
         this.values = new Object[height][headers.length];
     }
 
-    public Dataframe(String[] headers, Object[][] values) {
+    public Dataframe(String[] headers, Object[][] payload) {
         this.headers = headers;
-        this.values = values;
+        this.values = payload;
+    }
+
+    public Dataframe(String[] headers, List<Object[]> payload) {
+        this.headers = headers;
+        this.values = new Object[payload.size()][headers.length];
+        for (int rowIndex = 0; rowIndex < payload.size(); rowIndex++) {
+            for (int columnIndex = 0; columnIndex < headers.length; columnIndex++) {
+                setValue(rowIndex, columnIndex, payload.get(rowIndex)[columnIndex]);
+            }
+        }
     }
 
     public String[] getHeaders() {

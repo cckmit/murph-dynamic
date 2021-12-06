@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * RandomExtractor - 模式
+ * RandomExtractor - 配置
  *
  * @date: 2021/12/3 13:11
  * @author: murph

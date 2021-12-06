@@ -3,10 +3,6 @@ package com.murphyl.etl.support;
 import com.google.common.collect.HashBasedTable;
 import com.murphyl.dynamic.Feature;
 import com.murphyl.dynamic.Group;
-import com.murphyl.expr.core.ExpressionEvaluator;
-import com.networknt.schema.JsonSchema;
-import com.networknt.schema.JsonSchemaFactory;
-import com.networknt.schema.SpecVersion;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -44,7 +40,6 @@ public final class Environments {
      */
     public static final int JOB_SCHEMA_ARG_INDEX = 1;
 
-    private static final JsonSchemaFactory JSON_SCHEMA_FACTORY;
 
     private static final HashBasedTable<Class, String, Feature> DYNAMIC_FEATURE = HashBasedTable.create();
 
@@ -58,8 +53,6 @@ public final class Environments {
         } catch (Exception e) {
             throw new IllegalStateException("read .env file error", ExceptionUtils.getRootCause(e));
         }
-        // JSON Schema
-        JSON_SCHEMA_FACTORY = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
         // 加载动态特性
         registerDynamicFeatures();
     }
@@ -137,10 +130,6 @@ public final class Environments {
 
     public static int getInt(String key, int defaultValue) {
         return NumberUtils.toInt(DOT_ENV.get(key), defaultValue);
-    }
-
-    public static JsonSchema getJsonSchema(String schemaUri) {
-        return JSON_SCHEMA_FACTORY.getSchema(getResourceAsStream(schemaUri));
     }
 
 }

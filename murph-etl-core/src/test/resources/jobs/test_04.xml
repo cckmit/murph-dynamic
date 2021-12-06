@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<etl-job name="测试任务 002" debug="true">
+    <params>
+        <assign name="a" value="${format(date_add(now(), 1), 'yyyy-MM-dd')}" />
+        <assign name="b" value="${format(date_add(now(), -10, 'YEARS'), 'yyyy-MM-dd HH:mm:ss.SSS')}" />
+        <assign name="c" value="${timestamp()}" />
+    </params>
+    <task name="hello-0001">
+        <extractor type="jdbc" connect="jdbc:sqlite:file::memory:?cache=shared">
+            <![CDATA[
+                select * from employee where id < 10
+            ]]>
+        </extractor>
+        <loader type="console" batchSize="100" />
+    </task>
+    <task name="hello-0002">
+        <extractor type="jdbc" connect="jdbc:sqlite:file::memory:?cache=shared">
+            <![CDATA[
+                select a, count(1), sum(salary), min(salary), max(salary), min(age), max(age)
+                from (
+                    select (id % 23) as a, name, age, address, salary
+                    from employee
+                ) as x
+                group by a
+            ]]>
+        </extractor>
+        <loader type="console" batchSize="100" />
+    </task>
+</etl-job>

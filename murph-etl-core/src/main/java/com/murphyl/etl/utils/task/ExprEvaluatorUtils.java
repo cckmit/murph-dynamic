@@ -1,4 +1,4 @@
-package com.murphyl.etl.support.expr;
+package com.murphyl.etl.utils.task;
 
 import com.murphyl.etl.support.Environments;
 import com.murphyl.expr.core.ExpressionEvaluator;
@@ -13,7 +13,7 @@ import java.util.Objects;
  * @date: 2021/12/6 18:53
  * @author: murph
  */
-public interface ExpressionSupport {
+public final class ExprEvaluatorUtils {
 
     /**
      * 获取表达式执行引擎
@@ -21,7 +21,7 @@ public interface ExpressionSupport {
      * @param engineName
      * @return
      */
-    default ExpressionEvaluator getEngine(String engineName) {
+    public static ExpressionEvaluator getEngine(String engineName) {
         if (StringUtils.isBlank(engineName)) {
             return getDefaultEngine();
         }
@@ -35,7 +35,7 @@ public interface ExpressionSupport {
      *
      * @return
      */
-    default ExpressionEvaluator getDefaultEngine() {
+    public static ExpressionEvaluator getDefaultEngine() {
         String name = Environments.get("EXPRESSION_ENGINE");
         Validate.notBlank(name, "please set expression evaluate engine in .env file use key: EXPRESSION_ENGINE");
         ExpressionEvaluator engine = Environments.getFeature(ExpressionEvaluator.class, name);

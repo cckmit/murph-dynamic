@@ -1,4 +1,4 @@
-package com.murphyl.etl.core.task;
+package com.murphyl.etl.utils.task;
 
 import com.murphyl.etl.support.Environments;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -11,7 +11,7 @@ import java.util.Properties;
  * @date: 2021/12/6 18:42
  * @author: murph
  */
-public interface BatchSupport {
+public final class TaskStepUtils {
 
     /**
      * 获取批次信息
@@ -19,7 +19,7 @@ public interface BatchSupport {
      * @param properties
      * @return
      */
-    default Integer getBatchSize(Properties properties) {
+    public static Integer getBatchSize(Properties properties) {
         Integer batchSize = NumberUtils.createInteger(properties.getProperty("batchSize"));
         if (null == batchSize) {
             batchSize = Environments.getInt("BATCH_SIZE", 1000);
