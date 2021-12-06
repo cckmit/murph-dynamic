@@ -1,20 +1,22 @@
 package com.murphyl.etl.support;
 
 import com.google.common.collect.HashBasedTable;
+import com.google.common.primitives.Ints;
 import com.murphyl.dynamic.Feature;
 import com.networknt.schema.JsonSchema;
 import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
-import org.apache.commons.lang3.ArrayUtils;
+import io.github.cdimascio.dotenv.Dotenv;
+import org.apache.commons.lang3.SystemUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
 import java.nio.file.Paths;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.ServiceLoader;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 环境工具类
@@ -25,6 +27,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class Environments {
 
     private static final Logger logger = LoggerFactory.getLogger(Environments.class);
+
+    public static final Dotenv DOT_ENV;
 
     /**
      * 任务命令行参数 - 时间戳索引
@@ -40,8 +44,17 @@ public final class Environments {
     private static final HashBasedTable<Class, String, Feature> DYNAMIC_FEATURE = HashBasedTable.create();
 
     static {
+        // 读取本地配置
+        String workdir = System.getProperty("murph-etl.workdir", SystemUtils.USER_DIR);
+        logger.info("read variables from .env file in: {}", workdir);
+        try {
+            DOT_ENV = Dotenv.configure().directory(workdir).load();
+            logger.info("runtime environments: {}", DOT_ENV.entries());
+        } catch (Exception e) {
+            throw new IllegalStateException("read .env file error", ExceptionUtils.getRootCause(e));
+        }
+        // 加载插件
         JSON_SCHEMA_FACTORY = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
-
         Iterator<Feature> featureIterator = ServiceLoader.load(Feature.class).iterator();
         while (featureIterator.hasNext()) {
             Feature feature = featureIterator.next();
@@ -66,49 +79,40 @@ public final class Environments {
      * @return
      */
     public static String getResource(String path) {
-        return Paths.get(System.getProperty("user.dir"), path).toAbsolutePath().toString();
+        return Paths.get(SystemUtils.USER_DIR, path).toAbsolutePath().toString();
     }
 
     public static InputStream getResourceAsStream(String uri) {
         return Thread.currentThread().getContextClassLoader().getResourceAsStream(uri);
     }
 
-
+    /**
+     * 读取配置
+     *
+     * @param key
+     * @return
+     */
     public static String get(String key) {
-        if (System.getProperties().containsKey(key)) {
-            return System.getProperty(key);
-        }
-        if (System.getenv().containsKey(key)) {
-            return System.getenv(key);
-        }
-        return null;
+        return DOT_ENV.get(key);
     }
 
-    public static synchronized <T extends Feature> Map<String, T> loadService(String name, Class<T> tClass) {
-        Iterator<T> factories = loadServices(tClass);
-        Map<String, T> result = new ConcurrentHashMap<>();
-        T service;
-        while (factories.hasNext()) {
-            service = factories.next();
-            String[] alias = service.alias();
-            if (ArrayUtils.isEmpty(alias)) {
-                continue;
-            }
-            for (String item : alias) {
-                result.put(item, service);
-                logger.info("{} ({}) alias [{}] registered", name, service, item);
-            }
-        }
-        return result;
+    /**
+     * 读取配置
+     *
+     * @param key
+     * @param value
+     * @return
+     */
+    public static String get(String key, String value) {
+        return DOT_ENV.get(key, value);
     }
 
-    public static <T> Iterator<T> loadServices(Class<T> tClass) {
-        return ServiceLoader.load(tClass).iterator();
+    public static int getInt(String key, int defaultValue) {
+        return NumberUtils.toInt(DOT_ENV.get(key), defaultValue);
     }
 
     public static JsonSchema getJsonSchema(String schemaUri) {
         return JSON_SCHEMA_FACTORY.getSchema(getResourceAsStream(schemaUri));
     }
-
 
 }

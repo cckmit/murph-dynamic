@@ -2,8 +2,8 @@ package com.murphyl.etl.core.task.loader;
 
 import com.murphyl.dataframe.Dataframe;
 import com.murphyl.dynamic.Qualifier;
+import com.murphyl.etl.core.task.BatchSupport;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +25,7 @@ import java.util.stream.Stream;
  * @author: murph
  */
 @Qualifier({"text-file", "file", "csv"})
-public class TextFileLoader implements Loader {
+public class TextFileLoader implements Loader, BatchSupport {
 
     private static final Logger logger = LoggerFactory.getLogger(TextFileLoader.class);
 
@@ -35,11 +35,7 @@ public class TextFileLoader implements Loader {
 
     @Override
     public void load(String dsl, Dataframe dataframe, Properties stepProps) {
-        Integer batchSize = NumberUtils.toInt(stepProps.getProperty("batchSize"), 1000);
-        if (null == batchSize) {
-            logger.warn("batchSize({}) not number", batchSize);
-            batchSize = 10;
-        }
+        Integer batchSize = getBatchSize(stepProps);
         Path target = Paths.get(stepProps.getProperty("target", String.format("/%s.csv", UUID.randomUUID())));
         StringJoiner joiner = new StringJoiner(System.lineSeparator());
         joiner.add(renderLine(dataframe.getHeaders()));

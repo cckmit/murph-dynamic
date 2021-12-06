@@ -63,6 +63,12 @@
                 <artifactId>commons-email</artifactId>
                 <version>1.5</version>
             </dependency>
+            <!-- https://mvnrepository.com/artifact/io.github.cdimascio/dotenv-java -->
+            <dependency>
+                <groupId>io.github.cdimascio</groupId>
+                <artifactId>dotenv-java</artifactId>
+                <version>2.2.3</version>
+            </dependency>
             <!-- https://mvnrepository.com/artifact/com.networknt/json-schema-validator -->
             <dependency>
                 <groupId>com.networknt</groupId>

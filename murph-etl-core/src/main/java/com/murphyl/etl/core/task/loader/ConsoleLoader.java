@@ -3,7 +3,7 @@ package com.murphyl.etl.core.task.loader;
 import com.google.common.base.Joiner;
 import com.murphyl.dataframe.Dataframe;
 import com.murphyl.dynamic.Qualifier;
-import org.apache.commons.lang3.math.NumberUtils;
+import com.murphyl.etl.core.task.BatchSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,21 +18,18 @@ import java.util.Properties;
  * @author: murph
  */
 @Qualifier({"console", "stdout", "logger", "system.out"})
-public class ConsoleLoader implements Loader {
+public class ConsoleLoader implements Loader, BatchSupport {
 
     private static final Logger logger = LoggerFactory.getLogger(ConsoleLoader.class);
 
     @Override
     public void load(String dsl, Dataframe dataframe, Properties stepProps) {
-        Integer batchSize = NumberUtils.toInt(stepProps.getProperty("batchSize"), 1000);
-        if (null == batchSize) {
-            logger.warn("batchSize({}) not number", batchSize);
-            batchSize = 10;
-        }
+        Integer batchSize = getBatchSize(stepProps);
         Joiner lineJoiner = Joiner.on(stepProps.getProperty("separator", "\t")).useForNull("");
-        StringBuilder builder = new StringBuilder();
+        StringBuilder builder;
         int from, to, rowIndex = 0;
         for (int batchNo = 0; batchNo < dataframe.height() && rowIndex < dataframe.height(); batchNo++) {
+            builder = new StringBuilder();
             if (null != dataframe.getHeaders()) {
                 builder.append('[').append(lineJoiner.join(dataframe.getHeaders())).append(']');
             }

@@ -2,13 +2,13 @@ package com.murphyl.etl.core.task.extractor;
 
 import com.murphyl.dataframe.Dataframe;
 import com.murphyl.dynamic.Qualifier;
+import com.murphyl.etl.core.task.BatchSupport;
+import com.murphyl.etl.core.task.ExpressionSupport;
 import com.murphyl.etl.core.task.extractor.model.RandomExtractorSchema;
 import com.murphyl.etl.support.Environments;
 import com.murphyl.etl.utils.Serializers;
 import com.murphyl.expr.core.ExpressionEvaluator;
 import com.networknt.schema.JsonSchema;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,7 +24,7 @@ import java.util.Properties;
  * @author: murph
  */
 @Qualifier({"random"})
-public class RandomExtractor implements Extractor {
+public class RandomExtractor implements Extractor, BatchSupport, ExpressionSupport {
 
     private static final Logger logger = LoggerFactory.getLogger(RandomExtractor.class);
 
@@ -37,21 +37,14 @@ public class RandomExtractor implements Extractor {
 
     @Override
     public Dataframe extract(String dsl, Properties stepProps) {
-        Integer batchSize = NumberUtils.toInt(stepProps.getProperty("batchSize"), 1000);
-        if (null == batchSize) {
-            logger.warn("batchSize({}) not number", batchSize);
-            batchSize = 10;
-        }
+        Integer batchSize = getBatchSize(stepProps);
         RandomExtractorSchema schema = Serializers.JSON.validateAndParse(VALIDATE_SCHEMA, dsl, RandomExtractorSchema.class);
         if (null == schema || null == schema.getColumns() || schema.getColumns().isEmpty()) {
             throw new IllegalStateException("extractor schema lost columns");
         }
-        String engine = stepProps.getProperty("engine");
-        if(StringUtils.isEmpty(engine)) {
-            throw new IllegalStateException("no matched expression eval engine");
-        }
-        // 表达式处理起
-        ExpressionEvaluator expressionEvaluator = Environments.getFeature(ExpressionEvaluator.class, engine);
+        // 表达式处理器
+        String engineName = stepProps.getProperty("engine");
+        ExpressionEvaluator expressionEvaluator = getEngine(engineName);
         logger.info("use [{}] expression evaluator generate {} rows random data", expressionEvaluator, batchSize);
         // 列配置
         List<RandomExtractorSchema.Column> columns = schema.getColumns();

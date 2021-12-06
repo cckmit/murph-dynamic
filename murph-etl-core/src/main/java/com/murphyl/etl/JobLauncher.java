@@ -18,10 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 /**
  * 任务 - 执行器
@@ -33,7 +30,7 @@ public final class JobLauncher implements Callable<JobStatus> {
 
     private static final Logger logger = LoggerFactory.getLogger(JobLauncher.class);
 
-    protected static final ExecutorService EXECUTOR = ThreadPoolFactory.create(15, 35, 10, 30000, "job");
+    private final ExecutorService executor;
 
     private static final String EXPRESSION_RESOLVER = "jexl";
 
@@ -43,18 +40,24 @@ public final class JobLauncher implements Callable<JobStatus> {
         exprEvaluator = Environments.getFeature(ExpressionEvaluator.class, EXPRESSION_RESOLVER);
     }
 
-    private UUID uuid;
     private UUID workflowId;
+    private UUID uuid;
     private String[] args;
 
-    public JobLauncher(UUID uuid, String... args) {
-        this(UUID.randomUUID(), uuid, args);
+    public JobLauncher(UUID workflowId) {
+        this.workflowId = workflowId;
+        int corePoolSize = Environments.getInt("JOB_POOL_CORE_SIZE", 15);
+        int maxPoolSize = Environments.getInt("JOB_POOL_MAX_SIZE", 35);
+        int keepAliveMinutes = Environments.getInt("JOB_POOL_KEEP_ALIVE_MINUTE", 10);
+        int queueSize = Environments.getInt("JOB_POOL_QUEUE_SIZE", 100);
+        String poolNamePrefix = Environments.get("JOB_POOL_NAME_PREFIX", "etl-job");
+        executor = ThreadPoolFactory.create(corePoolSize, maxPoolSize, keepAliveMinutes, queueSize, poolNamePrefix);
     }
 
-    protected JobLauncher(UUID workflowId, UUID uuid, String... args) {
-        this.workflowId = workflowId;
+    public JobStatus launch(UUID uuid, String... args) throws ExecutionException, InterruptedException, TimeoutException {
         this.uuid = uuid;
         this.args = args;
+        return executor.submit(this).get(2, TimeUnit.HOURS);
     }
 
     @Override
@@ -82,8 +85,17 @@ public final class JobLauncher implements Callable<JobStatus> {
             return JobStatus.JOB_NO_STEP;
         }
         Map<String, String> params = schema.getParams();
+        Map<String, Object> jobParams = new TreeMap<>();
+        for (Map.Entry<String, String> entry : params.entrySet()) {
+            try {
+                jobParams.put(entry.getKey(), exprEvaluator.eval(StringUtils.trimToNull(entry.getValue())));
+            } catch (Exception e) {
+                logger.error("prepare job params({}) error:", entry, e);
+                throw new IllegalStateException("prepare job params error", e);
+            }
+        }
         CompletableFuture[] tasks = taskSchemaList.stream()
-                .map((task) -> createTaskFuture(params, task))
+                .map((task) -> createTaskFuture(jobParams, params, task))
                 .toArray(CompletableFuture[]::new);
         CompletableFuture<JobStatus> future = CompletableFuture.allOf(tasks).thenApply(Void -> {
             logger.info("workflow({}) job({}) all task completed", workflowId, uuid);
@@ -97,12 +109,8 @@ public final class JobLauncher implements Callable<JobStatus> {
         }
     }
 
-    private CompletableFuture createTaskFuture(Map<String, String> params, TaskSchema task) {
+    private CompletableFuture createTaskFuture(Map<String, Object> jobParams, Map<String, String> params, TaskSchema task) {
         logger.info("workflow({}) job({}) task({}) [{}] prepared", workflowId, uuid, UUID.randomUUID(), task.getName());
-        Map<String, Object> jobParams = new TreeMap<>();
-        for (Map.Entry<String, String> entry : params.entrySet()) {
-            jobParams.put(entry.getKey(), exprEvaluator.eval(StringUtils.trimToNull(entry.getValue())));
-        }
         return CompletableFuture.supplyAsync(() -> {
                     TaskStepSchema extractorSchema = task.getExtractor();
                     if (null == extractorSchema) {
@@ -119,7 +127,7 @@ public final class JobLauncher implements Callable<JobStatus> {
                         stepParams.putAll(extractorSchema.getProperties());
                         return extractorInstance.extract(extractorSchema.getDsl(), stepParams);
                     }
-                }, EXECUTOR)
+                }, executor)
                 .thenApplyAsync(dataframe -> {
                     if (null == dataframe) {
                         return null;
@@ -144,7 +152,7 @@ public final class JobLauncher implements Callable<JobStatus> {
                         }
                     }
                     return dataframe;
-                }, EXECUTOR).thenAcceptAsync(dataframe -> {
+                }, executor).thenAcceptAsync(dataframe -> {
                     if (null == dataframe) {
                         logger.error("no data to loaded");
                     } else {
@@ -161,7 +169,11 @@ public final class JobLauncher implements Callable<JobStatus> {
                             loaderInstance.load(loaderSchema.getDsl(), dataframe, stepParams);
                         }
                     }
-                }, EXECUTOR);
+                }, executor);
+    }
+
+    public void shutdown() {
+        executor.shutdown();
     }
 }
 
