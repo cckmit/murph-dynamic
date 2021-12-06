@@ -5,7 +5,7 @@ package com.murphyl.etl.support;
  * author: murph
  * 2021/12/4 - 9:42
  */
-public final class ETL {
+public final class Consts {
 
     public static final String XPATH_OF_ETL_JOB = "/etl-job";
 

@@ -1,6 +1,7 @@
 package com.murphyl.etl.core.job.schema.parser;
 
 import com.murphyl.dynamic.Feature;
+import com.murphyl.dynamic.Group;
 import com.murphyl.etl.core.job.schema.JobSchema;
 
 /**
@@ -9,6 +10,7 @@ import com.murphyl.etl.core.job.schema.JobSchema;
  * @date: 2021/11/11 13:15
  * @author: murph
  */
+@Group
 public interface JobSchemaParser extends Feature {
 
     /**

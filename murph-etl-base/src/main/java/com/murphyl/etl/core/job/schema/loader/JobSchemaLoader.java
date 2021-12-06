@@ -1,6 +1,7 @@
 package com.murphyl.etl.core.job.schema.loader;
 
 import com.murphyl.dynamic.Feature;
+import com.murphyl.dynamic.Group;
 import com.murphyl.etl.core.job.schema.JobSchema;
 
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.List;
  * @date: 2021/11/16 10:36
  * @author: murph
  */
+@Group
 public interface JobSchemaLoader extends Feature {
 
     /**

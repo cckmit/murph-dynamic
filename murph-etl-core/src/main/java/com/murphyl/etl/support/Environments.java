@@ -2,10 +2,13 @@ package com.murphyl.etl.support;
 
 import com.google.common.collect.HashBasedTable;
 import com.murphyl.dynamic.Feature;
+import com.murphyl.dynamic.Group;
+import com.murphyl.expr.core.ExpressionEvaluator;
 import com.networknt.schema.JsonSchema;
 import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
 import io.github.cdimascio.dotenv.Dotenv;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -14,9 +17,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
+import java.net.URL;
 import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.ServiceLoader;
+import java.util.stream.Stream;
 
 /**
  * 环境工具类
@@ -53,14 +58,27 @@ public final class Environments {
         } catch (Exception e) {
             throw new IllegalStateException("read .env file error", ExceptionUtils.getRootCause(e));
         }
-        // 加载插件
+        // JSON Schema
         JSON_SCHEMA_FACTORY = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
+        // 加载动态特性
+        registerDynamicFeatures();
+    }
+
+    /**
+     * 注册插件
+     */
+    private static void registerDynamicFeatures() {
         Iterator<Feature> featureIterator = ServiceLoader.load(Feature.class).iterator();
+        Feature feature;
+        Class[] interfaces;
         while (featureIterator.hasNext()) {
-            Feature feature = featureIterator.next();
-            Class[] interfaces = feature.getClass().getInterfaces();
+            feature = featureIterator.next();
+            interfaces = feature.getClass().getInterfaces();
             for (Class group : interfaces) {
-                logger.info("dynamic feature ({}) group by ({}) with alias {}", feature, group.getCanonicalName(), feature.alias());
+                if (!group.isAnnotationPresent(Group.class) || ArrayUtils.isEmpty(feature.alias())) {
+                    continue;
+                }
+                logger.info("dynamic feature ({}) with group ({}) and alias {}", feature, group.getCanonicalName(), feature.alias());
                 for (String alias : feature.alias()) {
                     if (StringUtils.isEmpty(alias)) {
                         continue;
@@ -90,6 +108,10 @@ public final class Environments {
 
     public static InputStream getResourceAsStream(String uri) {
         return Thread.currentThread().getContextClassLoader().getResourceAsStream(uri);
+    }
+
+    public static Stream<URL> resources(String uri) {
+        return Thread.currentThread().getContextClassLoader().resources(uri);
     }
 
     /**

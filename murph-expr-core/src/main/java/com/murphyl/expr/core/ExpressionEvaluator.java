@@ -1,6 +1,7 @@
 package com.murphyl.expr.core;
 
 import com.murphyl.dynamic.Feature;
+import com.murphyl.dynamic.Group;
 
 import java.util.Map;
 
@@ -10,6 +11,7 @@ import java.util.Map;
  * @date: 2021/12/2 20:14
  * @author: murph
  */
+@Group
 public interface ExpressionEvaluator extends Feature {
 
     /**

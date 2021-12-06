@@ -4,7 +4,6 @@ import com.murphyl.dynamic.Qualifier;
 import com.murphyl.expr.core.ExpressionEvaluator;
 import com.murphyl.expr.core.UserDefinedFunction;
 import com.murphyl.expr.support.PreparedExpressions;
-import org.apache.commons.jexl2.Expression;
 import org.apache.commons.jexl2.JexlEngine;
 import org.apache.commons.jexl2.MapContext;
 
@@ -40,14 +39,17 @@ public class Jexl2Evaluator implements ExpressionEvaluator {
         UserDefinedFunction udf;
         while (udfIterator.hasNext()) {
             udf = udfIterator.next();
-            if (null == udf.namespace()) {
+            if (null == udf.alias() || udf.alias().length == 0) {
                 continue;
             }
-            functions.put(udf.namespace(), udf);
+            for (String alias : udf.alias()) {
+                functions.put(alias, udf);
+            }
         }
         this.engine.setFunctions(functions);
     }
 
+    @Override
     public Object eval(String expr) {
         return eval(expr, null);
     }

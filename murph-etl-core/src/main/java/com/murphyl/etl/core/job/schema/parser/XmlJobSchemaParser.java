@@ -1,7 +1,7 @@
 package com.murphyl.etl.core.job.schema.parser;
 
 import com.murphyl.dynamic.Qualifier;
-import com.murphyl.etl.support.ETL;
+import com.murphyl.etl.support.Consts;
 import com.murphyl.etl.core.job.schema.JobSchema;
 import com.murphyl.etl.core.task.TaskSchema;
 import com.murphyl.etl.core.task.TaskStepSchema;
@@ -31,7 +31,7 @@ public class XmlJobSchemaParser implements JobSchemaParser {
 
     private static final String NODE_PARENTS_XPATH = "@parents";
 
-    public static final String XPATH_OF_ETL_JOB_NAME = String.format("%s/%s", ETL.XPATH_OF_ETL_JOB, NODE_NAME_XPATH);
+    public static final String XPATH_OF_ETL_JOB_NAME = String.format("%s/%s", Consts.XPATH_OF_ETL_JOB, NODE_NAME_XPATH);
 
     @Override
     public JobSchema parse(final String unique) {
@@ -44,7 +44,7 @@ public class XmlJobSchemaParser implements JobSchemaParser {
     }
 
     public List<TaskSchema> getJobTasks(Document document) {
-        NodeList tasks = XmlUtils.xpathList(document, ETL.XPATH_OF_ETL_JOB_TASKS);
+        NodeList tasks = XmlUtils.xpathList(document, Consts.XPATH_OF_ETL_JOB_TASKS);
         List<TaskSchema> result = new ArrayList<>(tasks.getLength());
         for (int i = 0; i < tasks.getLength(); i++) {
             result.add(resolveTask(tasks.item(i)));
@@ -53,7 +53,7 @@ public class XmlJobSchemaParser implements JobSchemaParser {
     }
 
     public Map<String, String> getJobParams(Document document) {
-        NodeList params = XmlUtils.xpathList(document, ETL.XPATH_OF_ETL_JOB_PARAM);
+        NodeList params = XmlUtils.xpathList(document, Consts.XPATH_OF_ETL_JOB_PARAM);
         Map<String, String> result = new HashMap<>(params.getLength());
         Node param;
         for (int i = 0; i < params.getLength(); i++) {
@@ -72,10 +72,10 @@ public class XmlJobSchemaParser implements JobSchemaParser {
             task.setParents(parents.split(","));
         }
         // extractor
-        Node extractor = XmlUtils.xpathNode(node, ETL.TASK_ROLE_EXTRACTOR);
+        Node extractor = XmlUtils.xpathNode(node, Consts.TASK_ROLE_EXTRACTOR);
         task.setExtractor(resolveTaskStepSchema(extractor));
         // transformers
-        NodeList transformers = XmlUtils.xpathList(node, ETL.TASK_ROLE_TRANSFORMER);
+        NodeList transformers = XmlUtils.xpathList(node, Consts.TASK_ROLE_TRANSFORMER);
         if (null != transformers || transformers.getLength() > 0) {
             TaskStepSchema[] resolved = IntStream.range(0, transformers.getLength())
                     // 按照索引转换子模块
@@ -85,7 +85,7 @@ public class XmlJobSchemaParser implements JobSchemaParser {
             task.setTransformers(resolved);
         }
         // loader
-        Node loader = XmlUtils.xpathNode(node, ETL.TASK_ROLE_LOADER);
+        Node loader = XmlUtils.xpathNode(node, Consts.TASK_ROLE_LOADER);
         task.setLoader(resolveTaskStepSchema(loader));
         return task;
     }
