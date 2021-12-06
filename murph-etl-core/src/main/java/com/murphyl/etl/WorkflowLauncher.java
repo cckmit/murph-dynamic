@@ -72,22 +72,21 @@ public final class WorkflowLauncher implements Callable<JobStatus> {
         }
         JobLauncher launcher = new JobLauncher(uuid);
         CompletableFuture[] futures = Stream.of(files).map(file -> {
-            UUID jobId = UUID.randomUUID();
             String[] taskArgs = new String[]{ts, file};
             return CompletableFuture.supplyAsync(() -> {
                 try {
-                    return launcher.launch(jobId, taskArgs);
+                    return launcher.launch(taskArgs);
                 } catch (ExecutionException e) {
-                    logger.error("workflow({}) job({}) schema({}) execute error", uuid, jobId, taskArgs, e);
+                    logger.error("workflow({}) schema({}) execute error", uuid, taskArgs, e);
                     return JobStatus.FAILURE;
                 } catch (InterruptedException e) {
-                    logger.error("workflow({}) job({}) schema({}) interrupt error", uuid, jobId, taskArgs, e);
+                    logger.error("workflow({}) schema({}) interrupt error", uuid, taskArgs, e);
                     return JobStatus.FAILURE;
                 } catch (TimeoutException e) {
-                    logger.error("workflow({}) job({}) schema({}) execute timeout", uuid, jobId, taskArgs, e);
+                    logger.error("workflow({}) schema({}) execute timeout", uuid, taskArgs, e);
                     return JobStatus.FAILURE;
                 } finally {
-                    logger.info("workflow({}) job({}) schema({}) finished", uuid, jobId, taskArgs);
+                    logger.info("workflow({}) schema({}) finished", uuid, taskArgs);
                 }
             }, executor);
         }).toArray(CompletableFuture[]::new);

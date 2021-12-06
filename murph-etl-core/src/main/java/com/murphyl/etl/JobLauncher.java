@@ -54,8 +54,8 @@ public final class JobLauncher implements Callable<JobStatus> {
         executor = ThreadPoolFactory.create(corePoolSize, maxPoolSize, keepAliveMinutes, queueSize, poolNamePrefix);
     }
 
-    public JobStatus launch(UUID uuid, String... args) throws ExecutionException, InterruptedException, TimeoutException {
-        this.uuid = uuid;
+    public JobStatus launch(String... args) throws ExecutionException, InterruptedException, TimeoutException {
+        this.uuid = UUID.randomUUID();
         this.args = args;
         return executor.submit(this).get(2, TimeUnit.HOURS);
     }
@@ -174,6 +174,10 @@ public final class JobLauncher implements Callable<JobStatus> {
 
     public void shutdown() {
         executor.shutdown();
+    }
+
+    public static void main(String[] args) throws ExecutionException, InterruptedException, TimeoutException {
+        new JobLauncher(UUID.randomUUID()).launch(args);
     }
 }
 
