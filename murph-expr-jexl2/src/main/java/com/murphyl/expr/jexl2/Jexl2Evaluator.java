@@ -16,6 +16,10 @@ import java.util.regex.Pattern;
 
 /**
  * JEXL - 表达式执行器
+ * - https://commons.apache.org/proper/commons-jexl/
+ * - http://commons.apache.org/proper/commons-jexl/reference/syntax.html
+ * - http://commons.apache.org/proper/commons-jexl/reference/examples.html
+ * - https://www.tabnine.com/code/java/methods/org.apache.commons.jexl2.JexlEngine/setFunctions
  *
  * @date: 2021/12/2 20:15
  * @author: murph

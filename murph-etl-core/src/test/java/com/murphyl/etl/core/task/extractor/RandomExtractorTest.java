@@ -4,7 +4,6 @@ import com.murphyl.dataframe.Dataframe;
 import com.murphyl.etl.core.task.loader.ConsoleLoader;
 import org.junit.jupiter.api.Test;
 
-import java.util.HashMap;
 import java.util.Properties;
 
 /**

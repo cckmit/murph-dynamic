@@ -1,11 +1,10 @@
 package com.murphyl.etl.core.task.loader;
 
-import com.google.common.escape.Escaper;
-import com.google.common.escape.Escapers;
-import com.google.common.primitives.Ints;
 import com.murphyl.dataframe.Dataframe;
 import com.murphyl.dynamic.Qualifier;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,19 +29,13 @@ public class TextFileLoader implements Loader {
 
     private static final Logger logger = LoggerFactory.getLogger(TextFileLoader.class);
 
-    private static final Escaper TEXT_ESCAPER;
-
     private static final String COL_WRAPPER = "\"%s\"";
 
     private static final String SEPARATOR = ",";
 
-    static {
-        TEXT_ESCAPER = Escapers.builder().addEscape('"', "\\\"").build();
-    }
-
     @Override
     public void load(String dsl, Dataframe dataframe, Properties stepProps) {
-        Integer batchSize = Ints.tryParse(stepProps.getProperty("batchSize", "1000"));
+        Integer batchSize = NumberUtils.toInt(stepProps.getProperty("batchSize"), 1000);
         if (null == batchSize) {
             logger.warn("batchSize({}) not number", batchSize);
             batchSize = 10;
@@ -75,7 +68,7 @@ public class TextFileLoader implements Loader {
             if (null == col) {
                 return StringUtils.EMPTY;
             } else {
-                return String.format(COL_WRAPPER, TEXT_ESCAPER.escape(col.toString()));
+                return String.format(COL_WRAPPER, StringEscapeUtils.escapeJava(col.toString()));
             }
         }).collect(Collectors.joining(SEPARATOR)).trim();
     }

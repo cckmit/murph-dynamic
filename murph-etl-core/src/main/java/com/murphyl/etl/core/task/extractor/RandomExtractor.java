@@ -1,14 +1,14 @@
 package com.murphyl.etl.core.task.extractor;
 
-import com.google.common.primitives.Ints;
 import com.murphyl.dataframe.Dataframe;
 import com.murphyl.dynamic.Qualifier;
-import com.murphyl.etl.support.Environments;
 import com.murphyl.etl.core.task.extractor.model.RandomExtractorSchema;
+import com.murphyl.etl.support.Environments;
 import com.murphyl.etl.utils.Serializers;
 import com.murphyl.expr.core.ExpressionEvaluator;
 import com.networknt.schema.JsonSchema;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +37,7 @@ public class RandomExtractor implements Extractor {
 
     @Override
     public Dataframe extract(String dsl, Properties stepProps) {
-        Integer batchSize = Ints.tryParse(stepProps.getProperty("batchSize", "1000"));
+        Integer batchSize = NumberUtils.toInt(stepProps.getProperty("batchSize"), 1000);
         if (null == batchSize) {
             logger.warn("batchSize({}) not number", batchSize);
             batchSize = 10;

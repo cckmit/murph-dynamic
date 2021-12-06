@@ -1,11 +1,9 @@
 package com.murphyl.etl.core.task.loader;
 
-import com.google.common.primitives.Ints;
+import com.google.common.base.Joiner;
 import com.murphyl.dataframe.Dataframe;
 import com.murphyl.dynamic.Qualifier;
-import de.vandermeer.asciitable.AsciiTable;
-import de.vandermeer.asciitable.CWC_LongestLine;
-import de.vandermeer.skb.interfaces.transformers.textformat.TextAlignment;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,6 +11,8 @@ import java.util.Properties;
 
 /**
  * 控制台 - Loader
+ * - https://github.com/vdmeer/asciitable
+ * - http://www.vandermeer.de/projects/skb/java/asciitable/examples/AT_07c_LongestLine.html
  *
  * @date: 2021/12/2 15:56
  * @author: murph
@@ -24,29 +24,27 @@ public class ConsoleLoader implements Loader {
 
     @Override
     public void load(String dsl, Dataframe dataframe, Properties stepProps) {
-        Integer batchSize = Ints.tryParse(stepProps.getProperty("batchSize", "1000"));
+        Integer batchSize = NumberUtils.toInt(stepProps.getProperty("batchSize"), 1000);
         if (null == batchSize) {
             logger.warn("batchSize({}) not number", batchSize);
             batchSize = 10;
         }
-        AsciiTable at;
-        CWC_LongestLine cwc = new CWC_LongestLine();
+        Joiner lineJoiner = Joiner.on(stepProps.getProperty("separator", "\t")).useForNull("");
+        StringBuilder builder = new StringBuilder();
         int from, to, rowIndex = 0;
         for (int batchNo = 0; batchNo < dataframe.height() && rowIndex < dataframe.height(); batchNo++) {
-            at = new AsciiTable();
-            at.getRenderer().setCWC(cwc);
             if (null != dataframe.getHeaders()) {
-                at.addRule();
-                at.addRow(dataframe.getHeaders()).setTextAlignment(TextAlignment.CENTER);
-                at.addRule();
+                builder.append('[').append(lineJoiner.join(dataframe.getHeaders())).append(']');
             }
             from = batchNo * batchSize;
             to = (batchNo + 1) * batchSize;
             for (rowIndex = from; rowIndex < to && rowIndex < dataframe.height(); rowIndex++) {
-                at.addRow(dataframe.row(rowIndex));
-                at.addRule();
+                if (builder.length() > 0) {
+                    builder.append(System.lineSeparator());
+                }
+                builder.append(lineJoiner.join(dataframe.row(rowIndex)));
             }
-            logger.info("show data from {} to {}: \n{}", from, to, at.render());
+            logger.info("show data from {} to {}: \n{}", from, to, builder);
         }
     }
 

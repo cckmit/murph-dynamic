@@ -1,6 +1,5 @@
 package com.murphyl.etl;
 
-import com.google.common.collect.Maps;
 import com.murphyl.etl.core.job.schema.JobSchema;
 import com.murphyl.etl.core.job.schema.JobSchemaManager;
 import com.murphyl.etl.core.task.TaskSchema;
@@ -18,10 +17,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -103,7 +99,7 @@ public final class JobLauncher implements Callable<JobStatus> {
 
     private CompletableFuture createTaskFuture(Map<String, String> params, TaskSchema task) {
         logger.info("workflow({}) job({}) task({}) [{}] prepared", workflowId, uuid, UUID.randomUUID(), task.getName());
-        Map<String, Object> jobParams = Maps.newHashMap();
+        Map<String, Object> jobParams = new TreeMap<>();
         for (Map.Entry<String, String> entry : params.entrySet()) {
             jobParams.put(entry.getKey(), exprEvaluator.eval(StringUtils.trimToNull(entry.getValue())));
         }
