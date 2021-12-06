@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<etl-job name="测试任务 005" debug="true">
+    <task name="hello-0001">
+        <loader type="jdbc" connect="jdbc:sqlite:file::memory:?cache=shared">
+            <![CDATA[
+                create table employee(
+                    id int primary key not null,
+                    name text not null,
+                    age int not null,
+                    address char(50),
+                    salary real
+                );
+                insert into employee values(1, 'hello', 12, 'my home', 23.1)
+            ]]>
+        </loader>
+    </task>
+<!--    <task name="hello-0002">-->
+<!--        <extractor type="jdbc" connect="jdbc:sqlite:file::memory:?cache=shared">-->
+<!--            <![CDATA[-->
+<!--                select a, count(1), sum(salary), min(salary), max(salary), min(age), max(age)-->
+<!--                from (-->
+<!--                    select (id % 23) as a, name, age, address, salary-->
+<!--                    from employee-->
+<!--                ) as x-->
+<!--                group by a-->
+<!--            ]]>-->
+<!--        </extractor>-->
+<!--        <loader type="console" batchSize="100" />-->
+<!--    </task>-->
+</etl-job>

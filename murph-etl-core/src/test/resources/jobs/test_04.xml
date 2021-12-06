@@ -1,10 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<etl-job name="测试任务 002" debug="true">
-    <params>
-        <assign name="a" value="${format(date_add(now(), 1), 'yyyy-MM-dd')}" />
-        <assign name="b" value="${format(date_add(now(), -10, 'YEARS'), 'yyyy-MM-dd HH:mm:ss.SSS')}" />
-        <assign name="c" value="${timestamp()}" />
-    </params>
+<etl-job name="测试任务 004" debug="true">
     <task name="hello-0001">
         <extractor type="jdbc" connect="jdbc:sqlite:file::memory:?cache=shared">
             <![CDATA[

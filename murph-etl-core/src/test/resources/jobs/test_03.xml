@@ -1,10 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<etl-job name="测试任务 002" debug="true">
-    <params>
-        <assign name="a" value="${format(date_add(now(), 1), 'yyyy-MM-dd')}" />
-        <assign name="b" value="${format(date_add(now(), -10, 'YEARS'), 'yyyy-MM-dd HH:mm:ss.SSS')}" />
-        <assign name="c" value="${timestamp()}" />
-    </params>
+<etl-job name="测试任务 003" debug="true">
     <task name="hello-0001" descrption="控制台显示随机数据">
         <extractor type="random" batchSize="300" engine="jexl">
             <![CDATA[

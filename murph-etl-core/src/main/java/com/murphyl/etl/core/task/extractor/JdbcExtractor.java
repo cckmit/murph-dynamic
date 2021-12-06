@@ -2,11 +2,9 @@ package com.murphyl.etl.core.task.extractor;
 
 import com.murphyl.dataframe.Dataframe;
 import com.murphyl.dynamic.Qualifier;
-import com.p6spy.engine.spy.P6DataSource;
-import org.apache.commons.lang3.StringUtils;
+import com.murphyl.etl.support.JdbcSupport;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
-import java.net.URI;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +17,7 @@ import java.util.Properties;
  * @author: murph
  */
 @Qualifier({"jdbc", "sql"})
-public class JdbcExtractor implements Extractor {
+public class JdbcExtractor extends JdbcSupport implements Extractor {
 
     @Override
     public Dataframe extract(String dsl, Properties stepProps) {
@@ -29,25 +27,16 @@ public class JdbcExtractor implements Extractor {
         return resultSet2Dataframe(result);
     }
 
-    private Connection getDatabaseConnection(String url) {
-        try {
-            String replaced = StringUtils.joinWith(":p6spy:", StringUtils.split(url, ":", 2));
-            return DriverManager.getConnection(replaced);
-        } catch (SQLException e) {
-            throw new IllegalStateException("get jdbc connection error: " + url, ExceptionUtils.getRootCause(e));
-        }
-    }
-
     private ResultSet doQuery(Connection jdbcConnection, String dsl) {
         try {
             Statement statement = jdbcConnection.createStatement();
             return statement.executeQuery(dsl);
         } catch (SQLException e) {
-            throw new IllegalStateException("execute sql error: " + dsl, ExceptionUtils.getRootCause(e));
+            throw new IllegalStateException("execute sql query error: " + dsl, ExceptionUtils.getRootCause(e));
         }
     }
 
-    public Dataframe resultSet2Dataframe(ResultSet result) {
+    private Dataframe resultSet2Dataframe(ResultSet result) {
         try {
             ResultSetMetaData metaData = result.getMetaData();
             int columnsCount = metaData.getColumnCount();

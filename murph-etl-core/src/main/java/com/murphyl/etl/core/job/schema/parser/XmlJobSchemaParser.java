@@ -1,10 +1,10 @@
 package com.murphyl.etl.core.job.schema.parser;
 
 import com.murphyl.dynamic.Qualifier;
-import com.murphyl.etl.support.Consts;
 import com.murphyl.etl.core.job.schema.JobSchema;
 import com.murphyl.etl.core.task.TaskSchema;
 import com.murphyl.etl.core.task.TaskStepSchema;
+import com.murphyl.etl.support.Consts;
 import com.murphyl.etl.utils.XmlUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -73,7 +73,9 @@ public class XmlJobSchemaParser implements JobSchemaParser {
         }
         // extractor
         Node extractor = XmlUtils.xpathNode(node, Consts.TASK_ROLE_EXTRACTOR);
-        task.setExtractor(resolveTaskStepSchema(extractor));
+        if (null != extractor) {
+            task.setExtractor(resolveTaskStepSchema(extractor));
+        }
         // transformers
         NodeList transformers = XmlUtils.xpathList(node, Consts.TASK_ROLE_TRANSFORMER);
         if (null != transformers || transformers.getLength() > 0) {
