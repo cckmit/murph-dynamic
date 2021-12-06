@@ -32,12 +32,6 @@ class WorkflowLauncherTest {
     public void  test03() throws ExecutionException, InterruptedException, TimeoutException {
         WorkflowLauncher.main(
                 "2021/11/11",
-                Environments.getResource("src/test/resources/jobs/test_03.xml"),
-                Environments.getResource("src/test/resources/jobs/test_03.xml"),
-                Environments.getResource("src/test/resources/jobs/test_03.xml"),
-                Environments.getResource("src/test/resources/jobs/test_03.xml"),
-                Environments.getResource("src/test/resources/jobs/test_03.xml"),
-                Environments.getResource("src/test/resources/jobs/test_03.xml"),
                 Environments.getResource("src/test/resources/jobs/test_03.xml")
         );
     }

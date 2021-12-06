@@ -1,7 +1,7 @@
 package com.murphyl.etl.core.task.loader;
 
-import com.google.common.base.Joiner;
 import com.murphyl.dataframe.Dataframe;
+import com.murphyl.dataframe.support.AsciiTable;
 import com.murphyl.dynamic.Qualifier;
 import com.murphyl.etl.core.task.BatchSupport;
 import org.slf4j.Logger;
@@ -25,23 +25,12 @@ public class ConsoleLoader implements Loader, BatchSupport {
     @Override
     public void load(String dsl, Dataframe dataframe, Properties stepProps) {
         Integer batchSize = getBatchSize(stepProps);
-        Joiner lineJoiner = Joiner.on(stepProps.getProperty("separator", "\t")).useForNull("");
-        StringBuilder builder;
-        int from, to, rowIndex = 0;
-        for (int batchNo = 0; batchNo < dataframe.height() && rowIndex < dataframe.height(); batchNo++) {
-            builder = new StringBuilder();
-            if (null != dataframe.getHeaders()) {
-                builder.append('[').append(lineJoiner.join(dataframe.getHeaders())).append(']');
-            }
+        AsciiTable at = new AsciiTable(dataframe);
+        int from, to;
+        for (int batchNo = 0; batchSize * batchNo < dataframe.height(); batchNo++) {
             from = batchNo * batchSize;
             to = (batchNo + 1) * batchSize;
-            for (rowIndex = from; rowIndex < to && rowIndex < dataframe.height(); rowIndex++) {
-                if (builder.length() > 0) {
-                    builder.append(System.lineSeparator());
-                }
-                builder.append(lineJoiner.join(dataframe.row(rowIndex)));
-            }
-            logger.info("show data from {} to {}: \n{}", from, to, builder);
+            logger.info("show dataframe from {} to {}: \n{}", from, to, at.render(from, to));
         }
     }
 

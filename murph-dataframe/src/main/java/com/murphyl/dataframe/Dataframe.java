@@ -28,6 +28,10 @@ public class Dataframe {
         return headers;
     }
 
+    public Object[][] getValues() {
+        return values;
+    }
+
     public void setValue(int rowIndex, int columnIndex, Object value) {
         values[rowIndex][columnIndex] = value;
     }
@@ -55,5 +59,6 @@ public class Dataframe {
         }
         return df;
     }
+
 
 }
