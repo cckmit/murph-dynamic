@@ -6,7 +6,7 @@
     <task name="hello-0001">
         <loader type="jdbc" datasource="${memory_sqlite}">
             <![CDATA[
-                create table employee(
+                create table if not exists employee (
                     id int primary key not null,
                     name text not null,
                     age int not null,
@@ -56,8 +56,5 @@
             ]]>
         </extractor>
         <loader type="console" batchSize="100" />
-    </task>
-    <task name="hello-0004" parents="hello-0001, hello-0002, hello-0003">
-        <loader />
     </task>
 </etl-job>

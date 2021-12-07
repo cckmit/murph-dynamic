@@ -11,11 +11,6 @@ import java.util.UUID;
  */
 public class TaskSchema {
 
-    public TaskSchema() {
-        this.uuid = UUID.randomUUID();
-    }
-
-    private UUID uuid;
     private String name;
     private String[] parents;
     private Map<String, String> params;
@@ -23,10 +18,6 @@ public class TaskSchema {
     private TaskStepSchema extractor;
     private TaskStepSchema[] transformers;
     private TaskStepSchema loader;
-
-    public UUID getUUID() {
-        return uuid;
-    }
 
     public String getName() {
         return name;

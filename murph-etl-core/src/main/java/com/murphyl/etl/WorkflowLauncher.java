@@ -5,7 +5,6 @@ import com.murphyl.etl.support.JobStatus;
 import com.murphyl.etl.utils.ThreadPoolFactory;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,11 +80,7 @@ public final class WorkflowLauncher implements Callable<JobStatus> {
             String[] taskArgs = new String[]{ts, file};
             return CompletableFuture.supplyAsync(() -> {
                 try {
-                    JobStatus result = launcher.launch(taskArgs);
-                    if(result != JobStatus.SUCCESS) {
-                        throw new IllegalStateException("workflow(" + uuid + ") schema(" + file + ") execute error");
-                    }
-                    return result;
+                    return JobLauncher.launch(uuid, taskArgs);
                 } catch (ExecutionException e) {
                     logger.error("workflow({}) schema({}) execute error", uuid, file, e);
                     return JobStatus.FAILURE;
@@ -100,12 +95,17 @@ public final class WorkflowLauncher implements Callable<JobStatus> {
         }).toArray(CompletableFuture[]::new);
         // 收集执行状态
         CompletableFuture<JobStatus> collector = CompletableFuture.allOf(futures).thenApplyAsync((Void) -> {
-            logger.info("workflow({}) collect execution result", uuid);
+            for (int i = 0; i < futures.length; i++) {
+                try {
+                    if (futures[i].get() != JobStatus.SUCCESS) {
+                        return JobStatus.FAILURE;
+                    }
+                } catch (Exception e) {
+                    logger.error("workflow({}) task({}) get execution result error", uuid, files[i], e);
+                }
+            }
             return JobStatus.SUCCESS;
-        }, executor).exceptionally(e -> {
-            logger.error("workflow({}) execution error", uuid, e);
-            return JobStatus.FAILURE;
-        });
+        }, executor);
         try {
             return collector.get(2, TimeUnit.HOURS);
         } catch (Exception e) {

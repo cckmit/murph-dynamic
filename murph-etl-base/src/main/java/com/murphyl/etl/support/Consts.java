@@ -28,6 +28,4 @@ public final class Consts {
      */
     public static final String TASK_ROLE_LOADER = "loader";
 
-
-
 }

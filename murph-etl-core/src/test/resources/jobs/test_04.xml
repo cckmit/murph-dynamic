@@ -1,6 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <etl-job name="测试任务 004" debug="true">
-    <task name="hello-0001">
+    <task name="hello-0000">
+        <loader type="jdbc" datasource="${memory_sqlite}">
+            <![CDATA[
+                create table if not exists employee (
+                    id int primary key not null,
+                    name text not null,
+                    age int not null,
+                    address char(50),
+                    salary real
+                );
+            ]]>
+        </loader>
+    </task>
+    <task name="hello-0001" parents="hello-0000">
         <extractor type="jdbc" connect="jdbc:sqlite:file::memory:?cache=shared">
             <![CDATA[
                 select * from employee where id < 10
@@ -8,7 +21,7 @@
         </extractor>
         <loader type="console" batchSize="100" />
     </task>
-    <task name="hello-0002">
+    <task name="hello-0002" parents="hello-0000">
         <extractor type="jdbc" connect="jdbc:sqlite:file::memory:?cache=shared">
             <![CDATA[
                 select a, count(1), sum(salary), min(salary), max(salary), min(age), max(age)

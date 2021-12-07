@@ -29,6 +29,8 @@ public class Jexl2Evaluator implements ExpressionEvaluator {
 
     public Jexl2Evaluator() {
         this.engine = new JexlEngine();
+        this.engine.setDebug(true);
+        this.engine.setStrict(true);
         Map<String, Object> functions = new HashMap<>();
         functions.put(null, PreparedExpressions.class);
         Iterator<MurphExprUdf> udfIterator = ServiceLoader.load(MurphExprUdf.class).iterator();

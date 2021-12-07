@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 任务 - 执行器
@@ -33,48 +34,54 @@ public final class JobLauncher implements Callable<JobStatus> {
 
     private static final Logger logger = LoggerFactory.getLogger(JobLauncher.class);
 
+    private final Set<String> failure;
     private final Set<String> success;
 
-    private final ExecutorService executor;
+    protected static final ExecutorService EXECUTOR;
 
     private final ExpressionEvaluator exprEvaluator;
 
     private UUID workflowId;
-    private UUID jobId;
+    private String jobId;
     private String[] args;
 
-    public JobLauncher(UUID workflowId) {
-        this.workflowId = workflowId;
+    static {
         int corePoolSize = Environments.getInt("JOB_POOL_CORE_SIZE", 15);
         int maxPoolSize = Environments.getInt("JOB_POOL_MAX_SIZE", 35);
         int keepAliveMinutes = Environments.getInt("JOB_POOL_KEEP_ALIVE_MINUTE", 10);
         int queueSize = Environments.getInt("JOB_POOL_QUEUE_SIZE", 100);
         String poolNamePrefix = Environments.get("JOB_POOL_NAME_PREFIX", "etl-job");
-        this.exprEvaluator = TaskStepUtils.getDefaultExprEvaluator();
-        this.success = new CopyOnWriteArraySet<>();
-        this.executor = ThreadPoolFactory.create(corePoolSize, maxPoolSize, keepAliveMinutes, queueSize, poolNamePrefix);
+        EXECUTOR = ThreadPoolFactory.create(corePoolSize, maxPoolSize, keepAliveMinutes, queueSize, poolNamePrefix);
     }
 
-    public JobStatus launch(String... args) throws ExecutionException, InterruptedException, TimeoutException {
-        this.jobId = UUID.randomUUID();
+    protected static JobStatus launch(UUID workflowId, String... args) throws ExecutionException, InterruptedException, TimeoutException {
+        return EXECUTOR.submit(new JobLauncher(workflowId, args)).get(2, TimeUnit.HOURS);
+    }
+
+    public JobLauncher(UUID workflowId, String... args) {
+        this.workflowId = workflowId;
         this.args = args;
-        return executor.submit(this).get(2, TimeUnit.HOURS);
+        this.exprEvaluator = TaskStepUtils.getDefaultExprEvaluator();
+        this.failure = new CopyOnWriteArraySet<>();
+        this.success = new CopyOnWriteArraySet<>();
     }
 
     @Override
     public JobStatus call() {
         if (ArrayUtils.isEmpty(args)) {
-            logger.error("workflow({}) task({}) invalid args", workflowId, jobId);
+            logger.error("workflow({}) invalid args", workflowId);
             return JobStatus.FAILURE;
         }
         String ts = ArrayUtils.get(args, Environments.CLI_TS_ARG_INDEX);
-        String file = ArrayUtils.get(args, Environments.JOB_SCHEMA_ARG_INDEX);
-        if (null == file) {
-            logger.error("workflow({}) task({}) invalid args", workflowId, jobId);
+        this.jobId = ArrayUtils.get(args, Environments.JOB_SCHEMA_ARG_INDEX);
+        if (null == jobId) {
+            logger.error("workflow({}) invalid args, jobId can not be null", workflowId);
             return JobStatus.FAILURE;
         }
         logger.info("workflow({}) task({}) fire at: {}", workflowId, jobId, ts);
-        return execute(JobSchemaManager.parse(file));
+        JobStatus result = execute(JobSchemaManager.parse(jobId));
+        logger.info("workflow({}) task({}) completed {}", workflowId, jobId, result);
+        return result;
     }
 
     private JobStatus execute(JobSchema schema) {
@@ -107,39 +114,45 @@ public final class JobLauncher implements Callable<JobStatus> {
                 .toArray(CompletableFuture[]::new);
         // 任务编排
         CompletableFuture<JobStatus> future = CompletableFuture.allOf(tasks).thenApply(Void -> {
-            logger.info("workflow({}) job({}) all task completed: {}", workflowId, jobId, success.toArray());
-            return success.size() == taskSchemaList.size() ? JobStatus.SUCCESS : JobStatus.FAILURE;
-        }).exceptionally(e -> {
-            logger.error("workflow({}) job({}) execute error", workflowId, jobId, e);
-            return JobStatus.FAILURE;
+            logger.info("workflow({}) job({}) success tasks: {}", workflowId, jobId, failure.toArray());
+            for (int i = 0; i < tasks.length; i++) {
+                try {
+                    if (tasks[i].get() != JobStatus.SUCCESS) {
+                        return JobStatus.FAILURE;
+                    }
+                } catch (Exception e) {
+                    logger.error("workflow({}) task({}) get execution result error", workflowId, jobId, e);
+                }
+            }
+            return failure.size() != tasks.length ? JobStatus.FAILURE : JobStatus.SUCCESS;
         });
         try {
             return future.get(2, TimeUnit.HOURS);
         } catch (Exception e) {
-            logger.info("workflow({}) job({}) execute error", workflowId, jobId, ExceptionUtils.getRootCause(e));
+            logger.info("workflow({}) job({}) execute error", workflowId, schema.getName(), ExceptionUtils.getRootCause(e));
             return JobStatus.FAILURE;
         }
     }
 
     private CompletableFuture<JobStatus> createTaskFuture(Map<String, Object> jobParams, TaskSchema task) {
-        logger.info("workflow({}) job({}) task({}) [{}] prepared", workflowId, jobId, task.getUUID(), task.getName());
+        logger.info("workflow({}) job({}) task({}) [{}] prepared", workflowId, jobId, task.getName(), task.getName());
         return CompletableFuture.runAsync(() -> {
             // 检查元数据和依赖
             if (StringUtils.isEmpty(task.getName())) {
-                throw new IllegalStateException("task(" + task.getUUID() + ") name can not be null");
+                throw new IllegalStateException("task name can not be null");
             }
-            checkTaskDependencies(task.getUUID(), task.getParents());
-        }, executor).thenApplyAsync((Void) -> {
+            checkTaskDependencies(task.getName(), task.getParents());
+        }, EXECUTOR).thenApplyAsync((Void) -> {
             // extract data
             TaskStepSchema extractorSchema = task.getExtractor();
             if (null == extractorSchema) {
                 return null;
             }
             Extractor extractorInstance = getTaskStepInstance(extractorSchema, Extractor.class);
-            logger.info("workflow({}) job({}) task({}) use [{}] extract data", workflowId, jobId, task.getUUID(), extractorInstance);
+            logger.info("workflow({}) job({}) task({}) use [{}] extract data", workflowId, jobId, task.getName(), extractorInstance);
             Map<String, Object> stepParams = processTaskStepParams(extractorSchema, jobParams);
             return extractorInstance.extract(extractorSchema.getDsl(), stepParams);
-        }, executor).thenApplyAsync(dataframe -> {
+        }, EXECUTOR).thenApplyAsync(dataframe -> {
             // transform data
             if (null == dataframe || ArrayUtils.isEmpty(task.getTransformers())) {
                 return dataframe;
@@ -149,22 +162,22 @@ public final class JobLauncher implements Callable<JobStatus> {
             for (TaskStepSchema transformerSchema : task.getTransformers()) {
                 transformerInstance = getTaskStepInstance(transformerSchema, Transformer.class);
                 stepParams = processTaskStepParams(transformerSchema, jobParams);
-                logger.info("workflow({}) job({}) task({}) use [{}] transform data", workflowId, jobId, task.getUUID(), transformerInstance);
+                logger.info("workflow({}) job({}) task({}) use [{}] transform data", workflowId, jobId, task.getName(), transformerInstance);
                 dataframe = transformerInstance.transform(transformerSchema.getDsl(), dataframe, stepParams);
             }
             return dataframe;
-        }, executor).thenApplyAsync(dataframe -> {
+        }, EXECUTOR).thenApplyAsync(dataframe -> {
             // load data
             TaskStepSchema loaderSchema = task.getLoader();
             Loader loaderInstance = getTaskStepInstance(loaderSchema, Loader.class);
             Map<String, Object> stepParams = processTaskStepParams(loaderSchema, jobParams);
-            logger.info("workflow({}) job({}) task({}) use [{}] load data", workflowId, jobId, task.getUUID(), loaderInstance);
+            logger.info("workflow({}) job({}) task({}) use [{}] load data", workflowId, jobId, task.getName(), loaderInstance);
             loaderInstance.load(loaderSchema.getDsl(), dataframe, stepParams);
             success.add(StringUtils.trim(task.getName()));
             return JobStatus.SUCCESS;
-        }, executor).exceptionally(e -> {
-            // 处理异常
-            logger.error("workflow({}) job({}) task({}) execute error", workflowId, jobId, task.getUUID(), ExceptionUtils.getRootCause(e));
+        }, EXECUTOR).exceptionally(e -> {
+            failure.add(StringUtils.trim(task.getName()));
+            logger.error("workflow({}) job({}) task({}) execute error", workflowId, jobId, task.getName(), ExceptionUtils.getRootCause(e));
             return JobStatus.FAILURE;
         });
     }
@@ -209,14 +222,14 @@ public final class JobLauncher implements Callable<JobStatus> {
     /**
      * 检查任务依赖
      *
-     * @param taskId
+     * @param taskName
      * @param parents
      */
-    private void checkTaskDependencies(UUID taskId, String[] parents) {
+    private void checkTaskDependencies(String taskName, String[] parents) {
         if (ArrayUtils.isEmpty(parents)) {
             return;
         }
-        int count = 0;
+        AtomicInteger counter = new AtomicInteger(0);
         Set<String> parsed = new HashSet<>();
         for (String parent : parents) {
             if (StringUtils.isNotBlank(parent)) {
@@ -224,24 +237,27 @@ public final class JobLauncher implements Callable<JobStatus> {
             }
         }
         while (!success.containsAll(parsed)) {
-            if (count > (120000 / 5 / 1000)) {
-                throw new IllegalStateException("task execute error: parent " + Arrays.toString(parsed.toArray()) + " timeout");
+            if (failure.size() > 0) {
+                throw new IllegalStateException("task(" + taskName + ") execute error: parent " + Arrays.toString(failure.toArray()) + " error");
+            }
+            if (counter.intValue() > (120000 / 5 / 1000)) {
+                throw new IllegalStateException("task(" + taskName + ") execute error: parent " + Arrays.toString(parsed.toArray()) + " timeout");
             }
             try {
-                logger.info("workflow({}) job({}) task({}) check parent {} {}th times", workflowId, jobId, taskId, parsed.toArray(), ++count);
+                logger.info("workflow({}) job({}) task({}) check parent {} {}th times", workflowId, jobId, taskName, parsed.toArray(), counter.incrementAndGet());
                 Thread.currentThread().join(1000 * 5);
             } catch (InterruptedException e) {
-                throw new IllegalStateException("task execute error, check parent status error", ExceptionUtils.getRootCause(e));
+                throw new IllegalStateException("task(" + taskName + ") execute error, check parent status error", ExceptionUtils.getRootCause(e));
             }
         }
     }
 
     protected void shutdown() {
-        executor.shutdown();
+        EXECUTOR.shutdown();
     }
 
-    public static void main(String[] args) throws ExecutionException, InterruptedException, TimeoutException {
-        new JobLauncher(UUID.randomUUID()).launch(args);
+    public static void main(String[] args) {
+        new JobLauncher(UUID.randomUUID(), args).call();
     }
 }
 
