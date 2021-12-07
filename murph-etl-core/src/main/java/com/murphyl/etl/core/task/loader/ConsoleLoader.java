@@ -3,10 +3,11 @@ package com.murphyl.etl.core.task.loader;
 import com.murphyl.dataframe.Dataframe;
 import com.murphyl.dataframe.support.AsciiTable;
 import com.murphyl.dynamic.Qualifier;
-import com.murphyl.etl.utils.task.TaskStepUtils;
+import com.murphyl.etl.utils.TaskStepUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -23,7 +24,7 @@ public class ConsoleLoader implements Loader {
     private static final Logger logger = LoggerFactory.getLogger(ConsoleLoader.class);
 
     @Override
-    public void load(String dsl, Dataframe dataframe, Properties stepProps) {
+    public void load(String dsl, Dataframe dataframe, Map<String, Object> stepProps) {
         Integer batchSize = TaskStepUtils.getBatchSize(stepProps);
         AsciiTable at = new AsciiTable(dataframe);
         int from, to;

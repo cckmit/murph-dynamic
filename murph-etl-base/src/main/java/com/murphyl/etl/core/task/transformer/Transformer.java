@@ -4,6 +4,7 @@ import com.murphyl.dataframe.Dataframe;
 import com.murphyl.dynamic.Feature;
 import com.murphyl.dynamic.Group;
 
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -20,8 +21,8 @@ public interface Transformer extends Feature {
      *
      * @param dsl
      * @param dataframe
-     * @param props
+     * @param params
      * @return
      */
-    Dataframe transform(String dsl, Dataframe dataframe, Properties props);
+    Dataframe transform(String dsl, Dataframe dataframe, Map<String, Object> params);
 }

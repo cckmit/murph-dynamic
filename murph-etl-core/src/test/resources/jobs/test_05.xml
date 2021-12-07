@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <etl-job name="测试任务 005" debug="true">
+    <params>
+        <assign name="memory_sqlite" value="${datasource:connect('jdbc:sqlite:file::memory:?cache=shared')}" />
+    </params>
     <task name="hello-0001">
-        <loader type="jdbc" connect="jdbc:sqlite:file::memory:?cache=shared">
+        <loader type="jdbc" datasource="${memory_sqlite}">
             <![CDATA[
                 create table employee(
                     id int primary key not null,
@@ -10,21 +13,48 @@
                     address char(50),
                     salary real
                 );
-                insert into employee values(1, 'hello', 12, 'my home', 23.1)
             ]]>
         </loader>
     </task>
-<!--    <task name="hello-0002">-->
-<!--        <extractor type="jdbc" connect="jdbc:sqlite:file::memory:?cache=shared">-->
-<!--            <![CDATA[-->
-<!--                select a, count(1), sum(salary), min(salary), max(salary), min(age), max(age)-->
-<!--                from (-->
-<!--                    select (id % 23) as a, name, age, address, salary-->
-<!--                    from employee-->
-<!--                ) as x-->
-<!--                group by a-->
-<!--            ]]>-->
-<!--        </extractor>-->
-<!--        <loader type="console" batchSize="100" />-->
-<!--    </task>-->
+    <task name="hello-0002" descrption="控制台显示随机数据">
+        <extractor type="random" batchSize="3000" engine="jexl">
+            <![CDATA[
+                {
+                    "columns": [
+                        {
+                            "name": "id",
+                            "expr": "${idGenerator.next()}",
+                            "extra": {
+                                "idGenerator": "${seq()}"
+                            }
+                        }, {
+                            "name": "name",
+                            "expr": "${uuid()}"
+                        }, {
+                            "name": "ts",
+                            "expr": "${timestamp()}"
+                        }
+                    ]
+                }
+            ]]>
+        </extractor>
+        <loader type="jdbc" datasource="${memory_sqlite}" batchSize="100">
+            <![CDATA[
+                insert into employee values(#{id}, 'hello-#{name}', #{id} + 3, '#{name}', #{ts})
+            ]]>
+        </loader>
+    </task>
+    <task name="hello-0003" parents="hello-0001, hello-0002">
+        <extractor type="jdbc" datasource="${memory_sqlite}">
+            <![CDATA[
+                select a, count(1), sum(salary), min(salary), max(salary), min(age), max(age)
+                from (
+                    select (id % 23) as a, name, age, address, salary
+                    from employee
+                ) as x
+                group by a
+            ]]>
+        </extractor>
+        <loader type="console" batchSize="100" />
+    </task>
 </etl-job>

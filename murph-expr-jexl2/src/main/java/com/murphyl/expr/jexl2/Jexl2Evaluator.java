@@ -2,7 +2,7 @@ package com.murphyl.expr.jexl2;
 
 import com.murphyl.dynamic.Qualifier;
 import com.murphyl.expr.core.ExpressionEvaluator;
-import com.murphyl.expr.core.UserDefinedFunction;
+import com.murphyl.expr.core.MurphExprUdf;
 import com.murphyl.expr.support.PreparedExpressions;
 import org.apache.commons.jexl2.JexlEngine;
 import org.apache.commons.jexl2.MapContext;
@@ -11,7 +11,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.ServiceLoader;
-import java.util.regex.Pattern;
 
 /**
  * JEXL - 表达式执行器
@@ -26,17 +25,14 @@ import java.util.regex.Pattern;
 @Qualifier({"jexl2", "jexl"})
 public class Jexl2Evaluator implements ExpressionEvaluator {
 
-    private static final Pattern EXPR_PATTERN = Pattern.compile("(^\\$\\{)(.+)(\\}$)");
-
     private final JexlEngine engine;
 
     public Jexl2Evaluator() {
         this.engine = new JexlEngine();
-
         Map<String, Object> functions = new HashMap<>();
         functions.put(null, PreparedExpressions.class);
-        Iterator<UserDefinedFunction> udfIterator = ServiceLoader.load(UserDefinedFunction.class).iterator();
-        UserDefinedFunction udf;
+        Iterator<MurphExprUdf> udfIterator = ServiceLoader.load(MurphExprUdf.class).iterator();
+        MurphExprUdf udf;
         while (udfIterator.hasNext()) {
             udf = udfIterator.next();
             if (null == udf.alias() || udf.alias().length == 0) {
@@ -51,14 +47,14 @@ public class Jexl2Evaluator implements ExpressionEvaluator {
 
     @Override
     public Object eval(String expr) {
-        return eval(expr, null);
+        return eval(expr, null, true);
     }
 
     @Override
-    public Object eval(String expr, Map<String, Object> params) {
-        String expression = (null == expr || expr.isBlank()) ? null : expr.trim();
-        if (null == expression || !EXPR_PATTERN.matcher(expression).find()) {
-            return expression;
+    public Object eval(String expr, Map<String, Object> params, boolean clean) {
+        String expression = clean ? clean(expr) : expr;
+        if (null == expression) {
+            return expr;
         }
         MapContext context = new MapContext();
         if (null != params && !params.isEmpty()) {
@@ -66,7 +62,7 @@ public class Jexl2Evaluator implements ExpressionEvaluator {
                 context.set(entry.getKey(), entry.getValue());
             }
         }
-        String temp = expression.substring(2, expression.length() - 1);
-        return engine.createExpression(temp).evaluate(context);
+        return engine.createExpression(expression).evaluate(context);
     }
+
 }

@@ -1,6 +1,7 @@
 package com.murphyl.etl.core.task;
 
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * 任务步骤 - 实例
@@ -10,6 +11,11 @@ import java.util.Map;
  */
 public class TaskSchema {
 
+    public TaskSchema() {
+        this.uuid = UUID.randomUUID();
+    }
+
+    private UUID uuid;
     private String name;
     private String[] parents;
     private Map<String, String> params;
@@ -18,6 +24,9 @@ public class TaskSchema {
     private TaskStepSchema[] transformers;
     private TaskStepSchema loader;
 
+    public UUID getUUID() {
+        return uuid;
+    }
 
     public String getName() {
         return name;

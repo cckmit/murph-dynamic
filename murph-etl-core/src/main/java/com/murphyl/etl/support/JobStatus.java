@@ -8,12 +8,9 @@ package com.murphyl.etl.support;
  */
 public enum JobStatus {
 
-    SUCCESS(0),
-    FAILURE(1),
-    CLI_ARGS_EMPTY(1),
-    CLI_ARGS_LOST_SCHEMA(2),
-
-    JOB_NO_STEP(10),
+    FAILURE(0),
+    SUCCESS(1),
+    SUBMITTED(2),
     ;
 
     public final int code;

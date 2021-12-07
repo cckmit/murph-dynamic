@@ -1,7 +1,6 @@
 package com.murphyl.dataframe;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * 数据帧
@@ -14,8 +13,14 @@ public class Dataframe {
     private String[] headers;
     private final Object[][] values;
 
+    private Map<String, Integer> fieldsMapping;
+
     public Dataframe(String[] headers, int height) {
         this.headers = headers;
+        this.fieldsMapping = new HashMap<>(headers.length);
+        for (int i = 0; i < headers.length; i++) {
+            this.fieldsMapping.put(headers[i], i);
+        }
         this.values = new Object[height][headers.length];
     }
 
@@ -26,12 +31,7 @@ public class Dataframe {
 
     public Dataframe(String[] headers, List<Object[]> payload) {
         this.headers = headers;
-        this.values = new Object[payload.size()][headers.length];
-        for (int rowIndex = 0; rowIndex < payload.size(); rowIndex++) {
-            for (int columnIndex = 0; columnIndex < headers.length; columnIndex++) {
-                setValue(rowIndex, columnIndex, payload.get(rowIndex)[columnIndex]);
-            }
-        }
+        this.values = payload.toArray(Object[][]::new);
     }
 
     public String[] getHeaders() {
@@ -46,6 +46,7 @@ public class Dataframe {
         values[rowIndex][columnIndex] = value;
     }
 
+
     public int width() {
         return headers.length;
     }
@@ -54,8 +55,12 @@ public class Dataframe {
         return values.length;
     }
 
-    public Object[] row(int rowIndex) {
-        return values[rowIndex];
+    public Map<String, Object> row(int rowIndex) {
+        Map<String, Object> result = new HashMap<>(headers.length);
+        for (int i = 0; i < headers.length; i++) {
+            result.put(headers[i], values[rowIndex][i]);
+        }
+        return result;
     }
 
     public Dataframe select(String... columns) {

@@ -43,13 +43,13 @@ public final class WorkflowLauncher implements Callable<JobStatus> {
     public JobStatus call() {
         if (ArrayUtils.isEmpty(args)) {
             logger.error("workflow({}) invalid args: {}", uuid, args);
-            return JobStatus.CLI_ARGS_EMPTY;
+            return JobStatus.FAILURE;
         }
         String ts = ArrayUtils.get(args, Environments.CLI_TS_ARG_INDEX);
         String[] files = ArrayUtils.remove(args, Environments.CLI_TS_ARG_INDEX);
         if (ArrayUtils.isEmpty(files)) {
             logger.error("workflow({}) missing job schema, workflow args: {}", uuid, Arrays.toString(args));
-            return JobStatus.CLI_ARGS_LOST_SCHEMA;
+            return JobStatus.FAILURE;
         }
         logger.info("workflow({}) load job schema from files：{}", uuid, Arrays.toString(files));
         try {
@@ -68,7 +68,7 @@ public final class WorkflowLauncher implements Callable<JobStatus> {
      */
     private JobStatus processJobSchemaArray(String ts, String[] files) {
         if (ArrayUtils.isEmpty(files)) {
-            return JobStatus.CLI_ARGS_LOST_SCHEMA;
+            return JobStatus.FAILURE;
         }
         JobLauncher launcher = new JobLauncher(uuid);
         CompletableFuture[] futures = Stream.of(files).map(file -> {

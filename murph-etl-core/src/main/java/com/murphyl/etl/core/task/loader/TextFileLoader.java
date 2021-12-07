@@ -2,7 +2,7 @@ package com.murphyl.etl.core.task.loader;
 
 import com.murphyl.dataframe.Dataframe;
 import com.murphyl.dynamic.Qualifier;
-import com.murphyl.etl.utils.task.TaskStepUtils;
+import com.murphyl.etl.utils.TaskStepUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.slf4j.Logger;
@@ -12,6 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.Map;
 import java.util.Properties;
 import java.util.StringJoiner;
 import java.util.UUID;
@@ -34,11 +35,10 @@ public class TextFileLoader implements Loader {
     private static final String SEPARATOR = ",";
 
     @Override
-    public void load(String dsl, Dataframe dataframe, Properties stepProps) {
+    public void load(String dsl, Dataframe dataframe, Map<String, Object> stepProps) {
         Integer batchSize = TaskStepUtils.getBatchSize(stepProps);
-        Path target = Paths.get(stepProps.getProperty("target", String.format("/%s.csv", UUID.randomUUID())));
+        Path target = Paths.get(TaskStepUtils.get(stepProps, "target"));
         StringJoiner joiner = new StringJoiner(System.lineSeparator());
-        joiner.add(renderLine(dataframe.getHeaders()));
         try {
             if (!Files.exists(target)) {
                 Files.createFile(target);
@@ -59,7 +59,7 @@ public class TextFileLoader implements Loader {
 
     }
 
-    private String renderLine(Object[] values) {
+    private String renderLine(Map<String, Object> values) {
         return Stream.of(values).map(col -> {
             if (null == col) {
                 return StringUtils.EMPTY;

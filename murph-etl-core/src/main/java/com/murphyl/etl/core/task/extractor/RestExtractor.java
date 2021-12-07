@@ -2,6 +2,7 @@ package com.murphyl.etl.core.task.extractor;
 
 import com.murphyl.dataframe.Dataframe;
 
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -13,7 +14,7 @@ import java.util.Properties;
 public class RestExtractor implements Extractor {
 
     @Override
-    public Dataframe extract(String dsl, Properties stepProps) {
+    public Dataframe extract(String dsl, Map<String, Object> params) {
         return null;
     }
 }

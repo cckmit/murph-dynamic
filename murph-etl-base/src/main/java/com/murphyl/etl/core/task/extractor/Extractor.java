@@ -4,6 +4,7 @@ import com.murphyl.dataframe.Dataframe;
 import com.murphyl.dynamic.Feature;
 import com.murphyl.dynamic.Group;
 
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -19,9 +20,9 @@ public interface Extractor extends Feature {
      * 抽取数据
      *
      * @param dsl
-     * @param stepProps
+     * @param params
      * @return
      */
-    Dataframe extract(String dsl, Properties stepProps);
+    Dataframe extract(String dsl, Map<String, Object> params);
 
 }

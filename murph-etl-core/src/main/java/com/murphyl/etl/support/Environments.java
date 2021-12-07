@@ -48,7 +48,7 @@ public final class Environments {
         String workdir = System.getProperty("murph-etl.workdir", SystemUtils.USER_DIR);
         logger.info("read variables from .env file in: {}", workdir);
         try {
-            DOT_ENV = Dotenv.configure().directory(workdir).load();
+            DOT_ENV = Dotenv.configure().ignoreIfMalformed().directory(workdir).load();
             logger.info("runtime environments: {}", DOT_ENV.entries());
         } catch (Exception e) {
             throw new IllegalStateException("read .env file error", ExceptionUtils.getRootCause(e));

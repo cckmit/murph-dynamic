@@ -7,6 +7,6 @@ import com.murphyl.dynamic.Feature;
  * @author: murph
  * 2021/12/4 - 12:45
  */
-public interface UserDefinedFunction extends Feature {
+public interface MurphExprUdf extends Feature {
 
 }

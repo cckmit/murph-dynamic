@@ -2,6 +2,7 @@ package com.murphyl.etl.core.task.loader;
 
 import com.murphyl.dataframe.Dataframe;
 
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -15,7 +16,7 @@ import java.util.Properties;
 public class EmailLoader implements Loader {
 
     @Override
-    public void load(String dsl, Dataframe dataframe, Properties props) {
+    public void load(String dsl, Dataframe dataframe, Map<String, Object> props) {
 
     }
 }

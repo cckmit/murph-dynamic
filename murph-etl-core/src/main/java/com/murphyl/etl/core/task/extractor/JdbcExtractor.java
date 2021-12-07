@@ -2,12 +2,16 @@ package com.murphyl.etl.core.task.extractor;
 
 import com.murphyl.dataframe.Dataframe;
 import com.murphyl.dynamic.Qualifier;
-import com.murphyl.etl.support.JdbcSupport;
+import com.murphyl.etl.core.task.loader.JdbcLoader;
+import com.murphyl.etl.utils.TaskStepUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -17,14 +21,21 @@ import java.util.Properties;
  * @author: murph
  */
 @Qualifier({"jdbc", "sql"})
-public class JdbcExtractor extends JdbcSupport implements Extractor {
+public class JdbcExtractor implements Extractor {
+
+    private static final Logger logger = LoggerFactory.getLogger(JdbcLoader.class);
 
     @Override
-    public Dataframe extract(String dsl, Properties stepProps) {
-        String jdbcUrl = stepProps.getProperty("connect");
-        Connection jdbcConnection = getDatabaseConnection(jdbcUrl);
-        ResultSet result = doQuery(jdbcConnection, dsl);
-        return resultSet2Dataframe(result);
+    public Dataframe extract(String dsl, Map<String, Object> params) {
+        try {
+            Connection jdbcConnection = TaskStepUtils.getJdbcConnection(params);
+            ResultSet result = doQuery(jdbcConnection, dsl);
+            Dataframe dataframe = resultSet2Dataframe(result);
+            logger.info("jdbc extract data complete {} rows, {}", dataframe.height(), dataframe.getHeaders());
+            return dataframe;
+        } catch (SQLException e) {
+            throw new IllegalStateException("extract data error", ExceptionUtils.getRootCause(e));
+        }
     }
 
     private ResultSet doQuery(Connection jdbcConnection, String dsl) {

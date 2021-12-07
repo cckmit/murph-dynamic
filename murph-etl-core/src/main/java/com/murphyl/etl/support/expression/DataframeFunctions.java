@@ -1,7 +1,7 @@
-package com.murphyl.etl.support.expr;
+package com.murphyl.etl.support.expression;
 
 import com.murphyl.dynamic.Qualifier;
-import com.murphyl.expr.core.UserDefinedFunction;
+import com.murphyl.expr.core.MurphExprUdf;
 
 import java.util.UUID;
 
@@ -11,7 +11,7 @@ import java.util.UUID;
  * @author murph
  */
 @Qualifier("dataframe")
-public class DataframeFunctions implements UserDefinedFunction {
+public class DataframeFunctions implements MurphExprUdf {
 
     public Object column(String name) {
         return String.format("%s:%s", name, UUID.randomUUID());

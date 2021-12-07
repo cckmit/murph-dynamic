@@ -4,6 +4,7 @@ import com.murphyl.dataframe.Dataframe;
 import com.murphyl.dynamic.Feature;
 import com.murphyl.dynamic.Group;
 
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -20,9 +21,9 @@ public interface Loader extends Feature {
      *
      * @param dsl
      * @param dataframe
-     * @param props
+     * @param params
      * @return
      */
-    void load(String dsl, Dataframe dataframe, Properties props);
+    void load(String dsl, Dataframe dataframe, Map<String, Object> params);
 
 }

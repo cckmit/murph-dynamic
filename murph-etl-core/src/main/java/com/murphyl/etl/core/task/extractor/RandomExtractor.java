@@ -2,9 +2,8 @@ package com.murphyl.etl.core.task.extractor;
 
 import com.murphyl.dataframe.Dataframe;
 import com.murphyl.dynamic.Qualifier;
-import com.murphyl.etl.utils.task.TaskStepUtils;
+import com.murphyl.etl.utils.TaskStepUtils;
 import com.murphyl.etl.core.task.extractor.model.RandomExtractorSchema;
-import com.murphyl.etl.utils.task.ExprEvaluatorUtils;
 import com.murphyl.etl.utils.Serializers;
 import com.murphyl.expr.core.ExpressionEvaluator;
 import org.slf4j.Logger;
@@ -27,15 +26,15 @@ public class RandomExtractor implements Extractor {
     private static final Logger logger = LoggerFactory.getLogger(RandomExtractor.class);
 
     @Override
-    public Dataframe extract(String dsl, Properties stepProps) {
-        Integer batchSize = TaskStepUtils.getBatchSize(stepProps);
+    public Dataframe extract(String dsl, Map<String, Object> params) {
+        Integer batchSize = TaskStepUtils.getBatchSize(params);
         RandomExtractorSchema schema = Serializers.JSON.parse(dsl, RandomExtractorSchema.class);
         if (null == schema || null == schema.getColumns() || schema.getColumns().isEmpty()) {
             throw new IllegalStateException("extractor schema lost columns");
         }
         // 表达式处理器
-        String engineName = stepProps.getProperty("engine");
-        ExpressionEvaluator expressionEvaluator = ExprEvaluatorUtils.getEngine(engineName);
+        String engineName = (String) params.get("engine");
+        ExpressionEvaluator expressionEvaluator = TaskStepUtils.getExprEvaluator(engineName);
         logger.info("use [{}] expression evaluator generate {} rows random data", expressionEvaluator, batchSize);
         // 列配置
         List<RandomExtractorSchema.Column> columns = schema.getColumns();
@@ -54,7 +53,7 @@ public class RandomExtractor implements Extractor {
             // 生成数据
             for (int rowIndex = 0; rowIndex < batchSize; rowIndex++) {
                 // 计算表达式值
-                value = expressionEvaluator.eval(column.getExpr(), extra);
+                value = expressionEvaluator.eval(column.getExpr(), extra, true);
                 // 写二维表
                 result.setValue(rowIndex, columnIndex, value);
             }

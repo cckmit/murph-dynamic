@@ -4,6 +4,7 @@ import com.murphyl.dataframe.Dataframe;
 import com.murphyl.etl.core.task.loader.ConsoleLoader;
 import org.junit.jupiter.api.Test;
 
+import java.util.HashMap;
 import java.util.Properties;
 
 /**
@@ -36,10 +37,10 @@ class RandomExtractorTest {
                 "        }\n" +
                 "    ]\n" +
                 "}";
-        Dataframe df = new RandomExtractor().extract(dsl, new Properties());
+        Dataframe df = new RandomExtractor().extract(dsl, new HashMap<>(0));
         ConsoleLoader loader = new ConsoleLoader();
-        loader.load("", df, new Properties());
-        loader.load("", df.select("id", "name"), new Properties());
+        loader.load("", df, new HashMap<>());
+        loader.load("", df.select("id", "name"), new HashMap());
     }
 
 }

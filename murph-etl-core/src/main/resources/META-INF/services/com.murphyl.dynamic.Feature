@@ -15,3 +15,4 @@ com.murphyl.etl.core.task.transformer.FilterTransformer
 # loaders
 com.murphyl.etl.core.task.loader.ConsoleLoader
 com.murphyl.etl.core.task.loader.TextFileLoader
+com.murphyl.etl.core.task.loader.JdbcLoader
