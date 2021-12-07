@@ -57,4 +57,7 @@
         </extractor>
         <loader type="console" batchSize="100" />
     </task>
+    <task name="hello-0004" parents="hello-0001, hello-0002, hello-0003">
+        <loader />
+    </task>
 </etl-job>

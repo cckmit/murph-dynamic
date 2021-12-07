@@ -65,6 +65,7 @@ class WorkflowLauncherTest {
     public void  test05() throws ExecutionException, InterruptedException, TimeoutException {
         WorkflowLauncher.main(
                 "2021/11/11",
+                Environments.getResource("src/test/resources/jobs/test_04.xml"),
                 Environments.getResource("src/test/resources/jobs/test_05.xml")
         );
     }

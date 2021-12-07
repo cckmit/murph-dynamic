@@ -5,6 +5,7 @@ import com.murphyl.etl.support.JobStatus;
 import com.murphyl.etl.utils.ThreadPoolFactory;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,7 +54,12 @@ public final class WorkflowLauncher implements Callable<JobStatus> {
         }
         logger.info("workflow({}) load job schema from files：{}", uuid, Arrays.toString(files));
         try {
-            return this.processJobSchemaArray(ts, files);
+            JobStatus status = this.processJobSchemaArray(ts, files);
+            logger.info("workflow({}) execute {}", uuid, status);
+            return status;
+        } catch (Exception e) {
+            logger.error("workflow({}) execute failure", uuid, e);
+            return JobStatus.FAILURE;
         } finally {
             executor.shutdown();
         }
@@ -75,15 +81,19 @@ public final class WorkflowLauncher implements Callable<JobStatus> {
             String[] taskArgs = new String[]{ts, file};
             return CompletableFuture.supplyAsync(() -> {
                 try {
-                    return launcher.launch(taskArgs);
+                    JobStatus result = launcher.launch(taskArgs);
+                    if(result != JobStatus.SUCCESS) {
+                        throw new IllegalStateException("workflow(" + uuid + ") schema(" + file + ") execute error");
+                    }
+                    return result;
                 } catch (ExecutionException e) {
-                    logger.error("workflow({}) schema({}) execute error", uuid, taskArgs, e);
+                    logger.error("workflow({}) schema({}) execute error", uuid, file, e);
                     return JobStatus.FAILURE;
                 } catch (InterruptedException e) {
-                    logger.error("workflow({}) schema({}) interrupt error", uuid, taskArgs, e);
+                    logger.error("workflow({}) schema({}) interrupt error", uuid, file, e);
                     return JobStatus.FAILURE;
                 } catch (TimeoutException e) {
-                    logger.error("workflow({}) schema({}) execute timeout", uuid, taskArgs, e);
+                    logger.error("workflow({}) schema({}) execute timeout", uuid, file, e);
                     return JobStatus.FAILURE;
                 }
             }, executor);
@@ -92,7 +102,10 @@ public final class WorkflowLauncher implements Callable<JobStatus> {
         CompletableFuture<JobStatus> collector = CompletableFuture.allOf(futures).thenApplyAsync((Void) -> {
             logger.info("workflow({}) collect execution result", uuid);
             return JobStatus.SUCCESS;
-        }, executor);
+        }, executor).exceptionally(e -> {
+            logger.error("workflow({}) execution error", uuid, e);
+            return JobStatus.FAILURE;
+        });
         try {
             return collector.get(2, TimeUnit.HOURS);
         } catch (Exception e) {
