@@ -33,7 +33,7 @@ public final class JobLauncher implements Callable<JobStatus> {
 
     private static final Logger logger = LoggerFactory.getLogger(JobLauncher.class);
 
-    private final Set<String> finished;
+    private final Set<String> success;
 
     private final ExecutorService executor;
 
@@ -51,7 +51,7 @@ public final class JobLauncher implements Callable<JobStatus> {
         int queueSize = Environments.getInt("JOB_POOL_QUEUE_SIZE", 100);
         String poolNamePrefix = Environments.get("JOB_POOL_NAME_PREFIX", "etl-job");
         this.exprEvaluator = TaskStepUtils.getDefaultExprEvaluator();
-        this.finished = new CopyOnWriteArraySet<>();
+        this.success = new CopyOnWriteArraySet<>();
         this.executor = ThreadPoolFactory.create(corePoolSize, maxPoolSize, keepAliveMinutes, queueSize, poolNamePrefix);
     }
 
@@ -78,33 +78,39 @@ public final class JobLauncher implements Callable<JobStatus> {
     }
 
     private JobStatus execute(JobSchema schema) {
+        // 检查配置信息
         if (null == schema) {
             logger.error("workflow({}) job({}) params can not be null", workflowId, jobId);
             return JobStatus.FAILURE;
         }
+        // 检查子任务队列
         List<TaskSchema> taskSchemaList = schema.getTasks();
         if (null == taskSchemaList || taskSchemaList.isEmpty()) {
             logger.error("workflow({}) job({}) task queue can not be empty", workflowId, jobId);
             return JobStatus.FAILURE;
         }
-        Map<String, String> params = schema.getParams();
         Map<String, Object> jobParams = new TreeMap<>();
-        for (Map.Entry<String, String> entry : params.entrySet()) {
-            try {
-                jobParams.put(entry.getKey(), exprEvaluator.eval(StringUtils.trimToNull(entry.getValue())));
-            } catch (Exception e) {
-                logger.error("workflow({}) job({}) prepare params({}) error:", workflowId, jobId, entry, e);
-                return JobStatus.FAILURE;
+        // 处理任务参数
+        if (null != schema.getParams() && !schema.getParams().isEmpty()) {
+            for (Map.Entry<String, String> entry : schema.getParams().entrySet()) {
+                try {
+                    jobParams.put(entry.getKey(), exprEvaluator.eval(StringUtils.trimToNull(entry.getValue())));
+                } catch (Exception e) {
+                    logger.error("workflow({}) job({}) prepare params({}) error:", workflowId, jobId, entry, e);
+                    return JobStatus.FAILURE;
+                }
             }
         }
+        // 子任务转换
         CompletableFuture[] tasks = taskSchemaList.stream()
-                .map((task) -> createTaskFuture(jobParams, params, task))
+                .map((task) -> createTaskFuture(jobParams, task))
                 .toArray(CompletableFuture[]::new);
+        // 任务编排
         CompletableFuture<JobStatus> future = CompletableFuture.allOf(tasks).thenApply(Void -> {
-            logger.info("workflow({}) job({}) all task completed", workflowId, jobId);
-            return this.finished.size() == taskSchemaList.size() ? JobStatus.SUCCESS : JobStatus.FAILURE;
+            logger.info("workflow({}) job({}) all task completed: {}", workflowId, jobId, success.toArray());
+            return success.size() == taskSchemaList.size() ? JobStatus.SUCCESS : JobStatus.FAILURE;
         }).exceptionally(e -> {
-            logger.info("workflow({}) job({}) all task completed", workflowId, jobId);
+            logger.error("workflow({}) job({}) execute error", workflowId, jobId, e);
             return JobStatus.FAILURE;
         });
         try {
@@ -115,7 +121,7 @@ public final class JobLauncher implements Callable<JobStatus> {
         }
     }
 
-    private CompletableFuture<JobStatus> createTaskFuture(Map<String, Object> jobParams, Map<String, String> params, TaskSchema task) {
+    private CompletableFuture<JobStatus> createTaskFuture(Map<String, Object> jobParams, TaskSchema task) {
         logger.info("workflow({}) job({}) task({}) [{}] prepared", workflowId, jobId, task.getUUID(), task.getName());
         return CompletableFuture.runAsync(() -> {
             // 检查元数据和依赖
@@ -131,7 +137,7 @@ public final class JobLauncher implements Callable<JobStatus> {
             }
             Extractor extractorInstance = getTaskStepInstance(extractorSchema, Extractor.class);
             logger.info("workflow({}) job({}) task({}) use [{}] extract data", workflowId, jobId, task.getUUID(), extractorInstance);
-            Map<String, Object> stepParams =  processTaskStepParams(extractorSchema, jobParams);
+            Map<String, Object> stepParams = processTaskStepParams(extractorSchema, jobParams);
             return extractorInstance.extract(extractorSchema.getDsl(), stepParams);
         }, executor).thenApplyAsync(dataframe -> {
             // transform data
@@ -154,7 +160,7 @@ public final class JobLauncher implements Callable<JobStatus> {
             Map<String, Object> stepParams = processTaskStepParams(loaderSchema, jobParams);
             logger.info("workflow({}) job({}) task({}) use [{}] load data", workflowId, jobId, task.getUUID(), loaderInstance);
             loaderInstance.load(loaderSchema.getDsl(), dataframe, stepParams);
-            this.finished.add(StringUtils.trim(task.getName()));
+            success.add(StringUtils.trim(task.getName()));
             return JobStatus.SUCCESS;
         }, executor).exceptionally(e -> {
             // 处理异常
@@ -217,7 +223,7 @@ public final class JobLauncher implements Callable<JobStatus> {
                 parsed.add(StringUtils.trim(parent));
             }
         }
-        while (!this.finished.containsAll(parsed)) {
+        while (!success.containsAll(parsed)) {
             if (count > (120000 / 5 / 1000)) {
                 throw new IllegalStateException("task execute error: parent " + Arrays.toString(parsed.toArray()) + " timeout");
             }

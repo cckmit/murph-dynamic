@@ -3,7 +3,6 @@ package com.murphyl.etl.core.task.extractor;
 import com.murphyl.dataframe.Dataframe;
 
 import java.util.Map;
-import java.util.Properties;
 
 /**
  * -

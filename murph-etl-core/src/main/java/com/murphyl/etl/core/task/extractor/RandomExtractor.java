@@ -2,9 +2,9 @@ package com.murphyl.etl.core.task.extractor;
 
 import com.murphyl.dataframe.Dataframe;
 import com.murphyl.dynamic.Qualifier;
-import com.murphyl.etl.utils.TaskStepUtils;
 import com.murphyl.etl.core.task.extractor.model.RandomExtractorSchema;
 import com.murphyl.etl.utils.Serializers;
+import com.murphyl.etl.utils.TaskStepUtils;
 import com.murphyl.expr.core.ExpressionEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 /**
  * 随机数据 - Extractor

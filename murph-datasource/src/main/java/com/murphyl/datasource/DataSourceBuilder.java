@@ -26,12 +26,12 @@ public final class DataSourceBuilder implements Feature {
         this.config = new HikariConfig();
     }
 
-    public DataSourceBuilder setJdbcUrl(String url) {
+    public DataSourceBuilder jdbcUrl(String url) {
         this.config.setJdbcUrl(url);
         return this;
     }
 
-    public DataSourceBuilder setProperties(Properties properties) {
+    public DataSourceBuilder useProperties(Properties properties) {
         if (null != properties) {
             for (Map.Entry<Object, Object> entry : properties.entrySet()) {
                 this.config.addDataSourceProperty(entry.getKey().toString(), entry.getValue());

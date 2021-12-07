@@ -2,6 +2,7 @@ package com.murphyl.etl.utils;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.murphyl.datasource.DataSourceBuilder;
 import com.murphyl.etl.support.Environments;
 import com.murphyl.expr.core.ExpressionEvaluator;
 import org.apache.commons.lang3.StringUtils;
@@ -11,7 +12,6 @@ import org.apache.commons.lang3.math.NumberUtils;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
  */
 public final class TaskStepUtils {
 
-    private final static Cache<Object, Object> STEP_CACHE = CacheBuilder.newBuilder()
+    private final static Cache<String, Object> STEP_CACHE = CacheBuilder.newBuilder()
             .maximumSize(100)
             .expireAfterWrite(2, TimeUnit.MINUTES)
             .concurrencyLevel(Runtime.getRuntime().availableProcessors())
@@ -39,38 +39,31 @@ public final class TaskStepUtils {
      * @return
      */
     public static Integer getBatchSize(Map<String, Object> params) {
-        String value = get(params, "batchSize");
+        String value = get(params, "batchSize", String.class);
         return null == value ? Environments.getInt("BATCH_KEY", 1000) : NumberUtils.toInt(value);
     }
 
-    public static String get(Map<String, Object> params, String key) {
+    public static <T> T get(Map<String, Object> params, String key, Class<T> tClass) {
         Object value = params.get(key);
-        return null == value ? null : value.toString();
+        return null == value ? null : tClass.cast(value);
     }
 
     public static Connection getJdbcConnection(Map<String, Object> properties) throws SQLException {
-        Object dataSource = properties.get("datasource");
+        DataSource dataSource = get(properties, "datasource", DataSource.class);
         if (null != dataSource) {
-            if (dataSource instanceof DataSource) {
-                return ((DataSource) dataSource).getConnection();
-            }
-            throw new IllegalStateException("not valid datasource: " + dataSource);
+            return dataSource.getConnection();
         }
-        Object url = get(properties, "connect");
-        if (null == url || StringUtils.isEmpty(url.toString())) {
+        String url = get(properties, "connect", String.class);
+        if (StringUtils.isEmpty(url)) {
             throw new IllegalStateException("step properties [ datasource, connect ] can not be null at same time");
         }
         try {
-            dataSource = STEP_CACHE.get(url, () -> {
-                Map<String, Object> params = new HashMap<>(1);
-                params.put("url", url);
-                return getDefaultExprEvaluator().eval("datasource:connect(url)", params, false);
-            });
+            dataSource = (DataSource) STEP_CACHE.get(url, () -> new DataSourceBuilder().jdbcUrl(url).build());
         } catch (ExecutionException e) {
             throw new IllegalStateException("can not create datasource: " + url);
         }
         if (null != dataSource) {
-            return ((DataSource) dataSource).getConnection();
+            return dataSource.getConnection();
         }
         throw new IllegalStateException("can not get jdbc connection from: " + url);
     }

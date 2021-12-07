@@ -85,14 +85,12 @@ public final class WorkflowLauncher implements Callable<JobStatus> {
                 } catch (TimeoutException e) {
                     logger.error("workflow({}) schema({}) execute timeout", uuid, taskArgs, e);
                     return JobStatus.FAILURE;
-                } finally {
-                    logger.info("workflow({}) schema({}) finished", uuid, taskArgs);
                 }
             }, executor);
         }).toArray(CompletableFuture[]::new);
         // 收集执行状态
         CompletableFuture<JobStatus> collector = CompletableFuture.allOf(futures).thenApplyAsync((Void) -> {
-            logger.info("workflow({}) completed", uuid);
+            logger.info("workflow({}) collect execution result", uuid);
             return JobStatus.SUCCESS;
         }, executor);
         try {
@@ -102,7 +100,7 @@ public final class WorkflowLauncher implements Callable<JobStatus> {
             return JobStatus.FAILURE;
         } finally {
             launcher.shutdown();
-            logger.info("workflow({}) all schema processed: {}", uuid, Arrays.toString(files));
+            logger.info("workflow({})[{}] all schema processed: {}", uuid, ts, files);
         }
 
     }

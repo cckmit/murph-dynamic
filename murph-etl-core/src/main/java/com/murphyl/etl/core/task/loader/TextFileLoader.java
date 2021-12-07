@@ -13,9 +13,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Map;
-import java.util.Properties;
 import java.util.StringJoiner;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -37,7 +35,7 @@ public class TextFileLoader implements Loader {
     @Override
     public void load(String dsl, Dataframe dataframe, Map<String, Object> stepProps) {
         Integer batchSize = TaskStepUtils.getBatchSize(stepProps);
-        Path target = Paths.get(TaskStepUtils.get(stepProps, "target"));
+        Path target = Paths.get(TaskStepUtils.get(stepProps, "target", String.class));
         StringJoiner joiner = new StringJoiner(System.lineSeparator());
         try {
             if (!Files.exists(target)) {

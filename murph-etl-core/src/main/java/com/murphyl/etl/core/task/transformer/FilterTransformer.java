@@ -5,9 +5,7 @@ import com.murphyl.dynamic.Qualifier;
 import com.murphyl.etl.utils.TaskStepUtils;
 import com.murphyl.expr.core.ExpressionEvaluator;
 
-import java.util.Arrays;
 import java.util.Map;
-import java.util.Properties;
 
 /**
  * 逻辑过滤器 - Transformer
@@ -20,7 +18,7 @@ public class FilterTransformer implements Transformer {
 
     @Override
     public Dataframe transform(String dsl, Dataframe dataframe, Map<String, Object> stepProps) {
-        String engineName = TaskStepUtils.get(stepProps, "engine");
+        String engineName = TaskStepUtils.get(stepProps, "engine", String.class);
         ExpressionEvaluator expressionEvaluator = TaskStepUtils.getExprEvaluator(engineName);
         for (int rowIndex = 0; rowIndex < dataframe.height(); rowIndex++) {
             System.out.println(expressionEvaluator.eval(dsl) + " - " + dataframe.row(rowIndex));

@@ -4,7 +4,6 @@ import com.murphyl.dataframe.Dataframe;
 import com.murphyl.dynamic.Qualifier;
 
 import java.util.Map;
-import java.util.Properties;
 
 /**
  * 文本文件 - Extractor

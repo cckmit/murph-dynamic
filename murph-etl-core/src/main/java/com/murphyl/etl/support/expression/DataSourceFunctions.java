@@ -23,11 +23,11 @@ public class DataSourceFunctions implements MurphExprUdf {
 
     public DataSource connect(String url, Map<String, Object> config) {
         DataSourceBuilder builder = new DataSourceBuilder();
-        builder.setJdbcUrl(url);
+        builder.jdbcUrl(url);
         if (null != config) {
             Properties properties = new Properties();
             properties.putAll(config);
-            builder.setProperties(properties);
+            builder.useProperties(properties);
         }
         return builder.build();
     }

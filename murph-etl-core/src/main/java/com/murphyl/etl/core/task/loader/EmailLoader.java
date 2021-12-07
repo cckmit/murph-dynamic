@@ -3,7 +3,6 @@ package com.murphyl.etl.core.task.loader;
 import com.murphyl.dataframe.Dataframe;
 
 import java.util.Map;
-import java.util.Properties;
 
 /**
  * EMail - 导出数据
