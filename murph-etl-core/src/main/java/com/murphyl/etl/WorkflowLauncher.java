@@ -59,8 +59,6 @@ public final class WorkflowLauncher implements Callable<JobStatus> {
         } catch (Exception e) {
             logger.error("workflow({}) execute failure", uuid, e);
             return JobStatus.FAILURE;
-        } finally {
-            executor.shutdown();
         }
     }
 
@@ -112,7 +110,6 @@ public final class WorkflowLauncher implements Callable<JobStatus> {
             logger.error("workflow({}) execute error", uuid, e);
             return JobStatus.FAILURE;
         } finally {
-            launcher.shutdown();
             logger.info("workflow({})[{}] all schema processed: {}", uuid, ts, files);
         }
 

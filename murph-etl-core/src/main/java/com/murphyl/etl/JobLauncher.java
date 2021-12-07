@@ -252,10 +252,6 @@ public final class JobLauncher implements Callable<JobStatus> {
         }
     }
 
-    protected void shutdown() {
-        EXECUTOR.shutdown();
-    }
-
     public static void main(String[] args) {
         new JobLauncher(UUID.randomUUID(), args).call();
     }
