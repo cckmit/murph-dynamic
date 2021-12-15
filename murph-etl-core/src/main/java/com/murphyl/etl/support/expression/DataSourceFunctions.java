@@ -2,7 +2,7 @@ package com.murphyl.etl.support.expression;
 
 import com.murphyl.datasource.DataSourceBuilder;
 import com.murphyl.dynamic.Qualifier;
-import com.murphyl.expr.core.MurphExprUdf;
+import com.murphyl.expression.core.MurphExprUdf;
 
 import javax.sql.DataSource;
 import java.util.Map;

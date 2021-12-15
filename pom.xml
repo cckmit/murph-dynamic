@@ -17,6 +17,7 @@
         <module>murph-dataframe</module>
         <module>murph-datasource</module>
         <module>murph-etl-base</module>
+        <module>murph-expr-jexl3</module>
     </modules>
 
     <properties>

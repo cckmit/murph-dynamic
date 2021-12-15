@@ -5,7 +5,7 @@ import com.murphyl.dynamic.Qualifier;
 import com.murphyl.etl.core.task.extractor.model.RandomExtractorSchema;
 import com.murphyl.etl.utils.Serializers;
 import com.murphyl.etl.utils.TaskStepUtils;
-import com.murphyl.expr.core.ExpressionEvaluator;
+import com.murphyl.expression.core.ExpressionEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

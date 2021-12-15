@@ -1,7 +1,7 @@
 package com.murphyl.etl.support.expression;
 
 import com.murphyl.dynamic.Qualifier;
-import com.murphyl.expr.core.MurphExprUdf;
+import com.murphyl.expression.core.MurphExprUdf;
 
 import java.util.UUID;
 

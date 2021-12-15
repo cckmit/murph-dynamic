@@ -2,6 +2,10 @@ package com.murphyl.dataframe.support;
 
 import com.murphyl.dataframe.Dataframe;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.Formatter;
+
 /**
  * -
  *
@@ -10,8 +14,9 @@ import com.murphyl.dataframe.Dataframe;
  */
 public class AsciiTable {
 
-    private final String[] headers;
-    private final Object[][] values;
+    private static final Formatter FORMATTER = new Formatter();
+
+    private final Dataframe dataframe;
 
     boolean showRowIndex = true;
 
@@ -22,8 +27,10 @@ public class AsciiTable {
     private String headerSuffix = "]";
 
     public AsciiTable(Dataframe dataframe) {
-        headers = dataframe.getHeaders();
-        values = dataframe.getValues();
+        this.dataframe = dataframe;
+        if(dataframe.height() > 0) {
+            throw new IllegalStateException("empty data frame");
+        }
     }
 
     public void setShowRowIndex(boolean showRowIndex) {
@@ -51,7 +58,7 @@ public class AsciiTable {
     }
 
     public String render() {
-        return render(0, values.length - 1);
+        return render(0, dataframe.height() - 1);
     }
 
     public synchronized String render(int from, int to) {
@@ -61,7 +68,9 @@ public class AsciiTable {
         if(from > to) {
             throw new IllegalStateException(String.format("[from(%d)] must less [to(%d)]", from, to));
         }
+        // formatter.format()
         StringBuilder builder = new StringBuilder();
+        String[] headers = dataframe.getHeaders();
         if (null != headers && headers.length > 0) {
             builder.append(headerPrefix);
             if(showRowIndex) {
@@ -75,6 +84,7 @@ public class AsciiTable {
             }
             builder.append(headerSuffix).append(System.lineSeparator());
         }
+        Object[][] values = dataframe.getValues();
         if (null != values && values.length > 0) {
             for (int rowIndex = from; rowIndex < to && rowIndex < values.length; rowIndex++) {
                 if (rowIndex > from) {
