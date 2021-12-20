@@ -22,6 +22,11 @@
             <artifactId>murph-dynamic-x</artifactId>
             <version>1.0</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/com.github.freva/ascii-table -->
+        <dependency>
+            <groupId>com.github.freva</groupId>
+            <artifactId>ascii-table</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

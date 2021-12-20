@@ -39,7 +39,7 @@ public class JdbcLoader implements Loader {
                 for (Map<String, Object> row : dataframe.render()) {
                     Map<String, Object> params = new HashMap(row);
                     params.putAll(stepProps);
-                    statement.addBatch(ExpressionUtils.eval(dsl, params).toString());
+                    statement.addBatch(ExpressionUtils.evalJxtl(dsl, params).toString());
                     size ++;
                     if(size % batchSize == 0) {
                         int[] result = statement.executeBatch();
@@ -53,7 +53,7 @@ public class JdbcLoader implements Loader {
                     logger.info("jdbc loader execute batch: {}", result.length);
                 }
             } else {
-                boolean result = statement.execute(ExpressionUtils.eval(dsl, stepProps).toString());
+                boolean result = statement.execute(ExpressionUtils.evalJxtl(dsl, stepProps).toString());
                 logger.info("jdbc loader execute complete: {}", result);
             }
         } catch (SQLException e) {

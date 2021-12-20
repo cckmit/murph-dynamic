@@ -27,29 +27,19 @@ public class RandomExtractor implements Extractor {
     @Override
     public Dataframe extract(String dsl, Map<String, Object> params) {
         Integer batchSize = TaskStepUtils.getBatchSize(params);
-        RandomExtractorSchema schema = Serializers.JSON.parse(dsl, RandomExtractorSchema.class);
-        if (null == schema || null == schema.getColumns() || schema.getColumns().isEmpty()) {
-            throw new IllegalStateException("extractor schema lost columns");
-        }
-        // 列配置
-        List<RandomExtractorSchema.Column> columns = schema.getColumns();
-        // 数据帧标题
-        String[] headers = columns.stream().map(col -> col.getName()).toArray(String[]::new);
         // 结果
-        Dataframe result = new Dataframe(headers, batchSize);
-        Object value;
-        RandomExtractorSchema.Column column;
-        for (int columnIndex = 0; columnIndex < columns.size(); columnIndex++) {
-            // 列配置信息
-            column = columns.get(columnIndex);
-            // 生成数据
-            for (int rowIndex = 0; rowIndex < batchSize; rowIndex++) {
-                // 计算表达式值
-                value = ExpressionUtils.eval(column.getExpr(), params);
-                // 写二维表
-                result.setValue(rowIndex, columnIndex, value);
+        Dataframe result = null;
+        for (Integer rowIndex = 0; rowIndex < batchSize; rowIndex++) {
+            Map<String, Object> values = ExpressionUtils.evalJexl(dsl, params);
+            if(rowIndex == 0) {
+                String[] headers = values.keySet().toArray(String[]::new);
+                result = new Dataframe(headers, batchSize);
+            }
+            for (int columnIndex = 0; columnIndex < result.getHeaders().length; columnIndex++) {
+                result.setValue(rowIndex, columnIndex, values.get(result.getHeaders()[columnIndex]));
             }
         }
+        logger.info("create {} row random data: {}", batchSize, result.getHeaders());
         return result;
     }
 

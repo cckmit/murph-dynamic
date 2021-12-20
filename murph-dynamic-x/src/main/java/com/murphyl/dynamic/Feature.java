@@ -2,7 +2,7 @@ package com.murphyl.dynamic;
 
 /**
  * 动态 - 插件
- * author: murph
+ * @author: murph
  * 2021/12/3 - 21:49
  */
 public interface Feature {

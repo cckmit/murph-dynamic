@@ -31,13 +31,18 @@ public final class ExpressionUtils {
         EVAL_CONTEXT = new MapContext();
     }
 
-    public static Object eval(String expression) {
-        return JXLT_ENGINE.createExpression(expression).evaluate(EVAL_CONTEXT);
+    public static <T> T evalJxtl(String expression) {
+        return (T) JXLT_ENGINE.createExpression(expression).evaluate(EVAL_CONTEXT);
     }
 
-    public static Object eval(String expression, Map<String, Object> params) {
+    public static <T> T evalJxtl(String expression, Map<String, Object> params) {
         JexlContext context = new MapContext(params);
-        return JXLT_ENGINE.createExpression(expression).evaluate(context);
+        return (T) JXLT_ENGINE.createExpression(expression).evaluate(context);
+    }
+
+    public static <T> T evalJexl(String expression, Map<String, Object> params) {
+        JexlContext context = new MapContext(params);
+        return (T) JEXL_ENGINE.createExpression(expression).evaluate(context);
     }
 
 }

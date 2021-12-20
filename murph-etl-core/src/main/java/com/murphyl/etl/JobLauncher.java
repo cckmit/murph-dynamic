@@ -98,7 +98,7 @@ public final class JobLauncher implements Callable<JobStatus> {
         if (null != schema.getParams() && !schema.getParams().isEmpty()) {
             for (Map.Entry<String, String> entry : schema.getParams().entrySet()) {
                 try {
-                    jobParams.put(entry.getKey(), ExpressionUtils.eval(StringUtils.trimToNull(entry.getValue())));
+                    jobParams.put(entry.getKey(), ExpressionUtils.evalJxtl(StringUtils.trimToNull(entry.getValue())));
                 } catch (Exception e) {
                     logger.error("workflow({}) job({}) prepare params({}) error:", workflowId, jobId, entry, e);
                     return JobStatus.FAILURE;
@@ -209,7 +209,7 @@ public final class JobLauncher implements Callable<JobStatus> {
         for (Map.Entry<Object, Object> entry : schema.getProperties().entrySet()) {
             value = entry.getValue();
             if (value instanceof String) {
-                value = ExpressionUtils.eval(value.toString(), jobParams);
+                value = ExpressionUtils.evalJxtl(value.toString(), jobParams);
             }
             stepParams.put(Objects.toString(entry.getKey()), value);
         }
