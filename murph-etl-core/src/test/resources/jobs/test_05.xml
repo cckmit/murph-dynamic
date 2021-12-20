@@ -18,27 +18,9 @@
         </loader>
     </task>
     <task name="hello-0002" descrption="控制台显示随机数据">
-        <extractor type="random" batchSize="3000" engine="jexl">
-            <!--
-
-                {
-                    "columns": [
-                        {
-                            "name": "id",
-                            "expr": "${id_generator.next()}"
-                        }, {
-                            "name": "name",
-                            "expr": "${uuid()}"
-                        }, {
-                            "name": "ts",
-                            "expr": "${timestamp()}"
-                        }
-                    ]
-                }
-
-            -->
+        <extractor type="random" batchSize="3000">
             <![CDATA[
-                {'id': id_generator.next(), 'name': uuid(), 'ts': timestamp() }
+                { 'id': id_generator.next(), 'name': uuid(), 'ts': timestamp() }
             ]]>
         </extractor>
         <loader type="jdbc" datasource="${memory_sqlite}" batchSize="100">

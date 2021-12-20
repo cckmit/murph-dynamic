@@ -5,6 +5,7 @@ import com.murphyl.etl.core.job.schema.JobSchema;
 import com.murphyl.etl.core.task.TaskSchema;
 import com.murphyl.etl.core.task.TaskStepSchema;
 import com.murphyl.etl.support.Consts;
+import com.murphyl.etl.support.xml.XmlNode;
 import com.murphyl.etl.utils.XmlUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
