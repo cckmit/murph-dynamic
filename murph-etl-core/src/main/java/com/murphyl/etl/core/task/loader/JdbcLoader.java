@@ -47,9 +47,9 @@ public class JdbcLoader implements Loader {
                     }
                 }
                 int[] result = statement.executeBatch();
-                logger.info("jdbc loader execute complete: {}", result.length);
+                logger.info("jdbc loader execute batch: {}", result.length);
             } else {
-                int result = statement.executeUpdate(ExpressionUtils.eval(dsl, stepProps).toString());
+                boolean result = statement.execute(ExpressionUtils.eval(dsl, stepProps).toString());
                 logger.info("jdbc loader execute complete: {}", result);
             }
         } catch (SQLException e) {

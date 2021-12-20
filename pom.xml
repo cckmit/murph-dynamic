@@ -12,12 +12,9 @@
     <modules>
         <module>murph-dynamic-x</module>
         <module>murph-etl-core</module>
-        <module>murph-expr-jexl2</module>
-        <module>murph-expr-core</module>
         <module>murph-dataframe</module>
         <module>murph-datasource</module>
         <module>murph-etl-base</module>
-        <module>murph-expr-jexl3</module>
     </modules>
 
     <properties>

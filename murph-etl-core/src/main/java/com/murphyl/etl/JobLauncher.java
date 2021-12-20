@@ -111,7 +111,7 @@ public final class JobLauncher implements Callable<JobStatus> {
                 .toArray(CompletableFuture[]::new);
         // 任务编排
         CompletableFuture<JobStatus> future = CompletableFuture.allOf(tasks).thenApply(Void -> {
-            logger.info("workflow({}) job({}) success tasks: {}", workflowId, jobId, failure.toArray());
+            logger.info("workflow({}) job({}) success tasks: {}", workflowId, jobId, success.toArray());
             for (int i = 0; i < tasks.length; i++) {
                 try {
                     if (tasks[i].get() != JobStatus.SUCCESS) {
@@ -121,7 +121,7 @@ public final class JobLauncher implements Callable<JobStatus> {
                     logger.error("workflow({}) task({}) get execution result error", workflowId, jobId, e);
                 }
             }
-            return failure.size() != tasks.length ? JobStatus.FAILURE : JobStatus.SUCCESS;
+            return success.size() == tasks.length ? JobStatus.SUCCESS : JobStatus.FAILURE;
         });
         try {
             return future.get(2, TimeUnit.HOURS);
