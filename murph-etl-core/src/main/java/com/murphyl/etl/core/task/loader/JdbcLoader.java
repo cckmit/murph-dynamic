@@ -30,6 +30,7 @@ public class JdbcLoader implements Loader {
 
     @Override
     public void load(String dsl, Dataframe dataframe, Map<String, Object> stepProps) {
+        Integer batchSize = TaskStepUtils.getBatchSize(stepProps);
         try {
             Connection jdbcConnection = TaskStepUtils.getJdbcConnection(stepProps);
             Statement statement = jdbcConnection.createStatement();
@@ -40,14 +41,17 @@ public class JdbcLoader implements Loader {
                     params.putAll(stepProps);
                     statement.addBatch(ExpressionUtils.eval(dsl, params).toString());
                     size ++;
-                    if(size % 1000 == 0) {
+                    if(size % batchSize == 0) {
                         int[] result = statement.executeBatch();
                         logger.info("jdbc loader execute batch: {}", result.length);
                         statement.clearBatch();
+                        size = 0;
                     }
                 }
-                int[] result = statement.executeBatch();
-                logger.info("jdbc loader execute batch: {}", result.length);
+                if(size > 0) {
+                    int[] result = statement.executeBatch();
+                    logger.info("jdbc loader execute batch: {}", result.length);
+                }
             } else {
                 boolean result = statement.execute(ExpressionUtils.eval(dsl, stepProps).toString());
                 logger.info("jdbc loader execute complete: {}", result);

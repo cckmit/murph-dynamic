@@ -55,4 +55,12 @@
         </extractor>
         <loader type="console" batchSize="100" />
     </task>
+    <task name="hello-0004" parents="hello-0003">
+        <extractor type="jdbc" datasource="${memory_sqlite}">
+            <![CDATA[
+                select * from employee
+            ]]>
+        </extractor>
+        <loader type="console" batchSize="100" />
+    </task>
 </etl-job>
