@@ -249,7 +249,7 @@ public final class JobLauncher implements Callable<JobStatus> {
         }
     }
 
-    public static void main(String[] args) {
+    public static void main(String... args) {
         new JobLauncher(UUID.randomUUID(), args).call();
     }
 }

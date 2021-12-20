@@ -73,7 +73,6 @@ public final class WorkflowLauncher implements Callable<JobStatus> {
         if (ArrayUtils.isEmpty(files)) {
             return JobStatus.FAILURE;
         }
-        JobLauncher launcher = new JobLauncher(uuid);
         CompletableFuture[] futures = Stream.of(files).map(file -> {
             String[] taskArgs = new String[]{ts, file};
             return CompletableFuture.supplyAsync(() -> {
@@ -112,7 +111,6 @@ public final class WorkflowLauncher implements Callable<JobStatus> {
         } finally {
             logger.info("workflow({})[{}] all schema processed: {}", uuid, ts, files);
         }
-
     }
 
     public static void main(String... args) throws ExecutionException, InterruptedException, TimeoutException {
