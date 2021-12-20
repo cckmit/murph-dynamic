@@ -2,6 +2,7 @@
 <etl-job name="测试任务 005" debug="true">
     <params>
         <assign name="memory_sqlite" value="${datasource:connect('jdbc:sqlite:file::memory:?cache=shared')}" />
+        <assign name="id_generator" value="${seq()}" />
     </params>
     <task name="hello-0001">
         <loader type="jdbc" datasource="${memory_sqlite}">
@@ -23,10 +24,7 @@
                     "columns": [
                         {
                             "name": "id",
-                            "expr": "${idGenerator.next()}",
-                            "extra": {
-                                "idGenerator": "${seq()}"
-                            }
+                            "expr": "${id_generator.next()}"
                         }, {
                             "name": "name",
                             "expr": "${uuid()}"

@@ -2,8 +2,6 @@ package com.murphyl.dataframe.support;
 
 import com.murphyl.dataframe.Dataframe;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.Formatter;
 
 /**
@@ -28,7 +26,7 @@ public class AsciiTable {
 
     public AsciiTable(Dataframe dataframe) {
         this.dataframe = dataframe;
-        if(dataframe.height() > 0) {
+        if(dataframe.height() == 0) {
             throw new IllegalStateException("empty data frame");
         }
     }

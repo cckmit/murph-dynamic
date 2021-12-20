@@ -11,9 +11,8 @@ import com.murphyl.etl.core.task.loader.Loader;
 import com.murphyl.etl.core.task.transformer.Transformer;
 import com.murphyl.etl.support.Environments;
 import com.murphyl.etl.support.JobStatus;
-import com.murphyl.etl.utils.TaskStepUtils;
+import com.murphyl.etl.utils.ExpressionUtils;
 import com.murphyl.etl.utils.ThreadPoolFactory;
-import com.murphyl.expression.core.ExpressionEvaluator;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -39,7 +38,6 @@ public final class JobLauncher implements Callable<JobStatus> {
 
     protected static final ExecutorService EXECUTOR;
 
-    private final ExpressionEvaluator exprEvaluator;
 
     private UUID workflowId;
     private String jobId;
@@ -61,7 +59,6 @@ public final class JobLauncher implements Callable<JobStatus> {
     public JobLauncher(UUID workflowId, String... args) {
         this.workflowId = workflowId;
         this.args = args;
-        this.exprEvaluator = TaskStepUtils.getDefaultExprEvaluator();
         this.failure = new CopyOnWriteArraySet<>();
         this.success = new CopyOnWriteArraySet<>();
     }
@@ -101,7 +98,7 @@ public final class JobLauncher implements Callable<JobStatus> {
         if (null != schema.getParams() && !schema.getParams().isEmpty()) {
             for (Map.Entry<String, String> entry : schema.getParams().entrySet()) {
                 try {
-                    jobParams.put(entry.getKey(), exprEvaluator.eval(StringUtils.trimToNull(entry.getValue())));
+                    jobParams.put(entry.getKey(), ExpressionUtils.eval(StringUtils.trimToNull(entry.getValue())));
                 } catch (Exception e) {
                     logger.error("workflow({}) job({}) prepare params({}) error:", workflowId, jobId, entry, e);
                     return JobStatus.FAILURE;
@@ -211,8 +208,8 @@ public final class JobLauncher implements Callable<JobStatus> {
         Object value;
         for (Map.Entry<Object, Object> entry : schema.getProperties().entrySet()) {
             value = entry.getValue();
-            if (value instanceof String && exprEvaluator.valid(value.toString())) {
-                value = exprEvaluator.eval(value.toString(), jobParams, true);
+            if (value instanceof String) {
+                value = ExpressionUtils.eval(value.toString(), jobParams);
             }
             stepParams.put(Objects.toString(entry.getKey()), value);
         }

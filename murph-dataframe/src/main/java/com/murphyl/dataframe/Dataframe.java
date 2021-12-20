@@ -1,6 +1,10 @@
 package com.murphyl.dataframe;
 
-import java.util.*;
+import java.lang.reflect.Array;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 数据帧
@@ -13,14 +17,9 @@ public class Dataframe {
     private String[] headers;
     private final Object[][] values;
 
-    private Map<String, Integer> fieldsMapping;
 
     public Dataframe(String[] headers, int height) {
         this.headers = headers;
-        this.fieldsMapping = new HashMap<>(headers.length);
-        for (int i = 0; i < headers.length; i++) {
-            this.fieldsMapping.put(headers[i], i);
-        }
         this.values = new Object[height][headers.length];
     }
 
@@ -53,6 +52,16 @@ public class Dataframe {
 
     public int height() {
         return values.length;
+    }
+
+    public Map<String, Object>[] render() {
+        return Arrays.stream(values).map(row -> {
+            Map<String, Object> result = new HashMap<>(values.length);
+            for (int i = 0; i < headers.length; i++) {
+                result.put(headers[i], row[i]);
+            }
+            return result;
+        }).toArray(Map[]::new);
     }
 
     public Map<String, Object> row(int rowIndex) {

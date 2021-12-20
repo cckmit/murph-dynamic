@@ -4,7 +4,6 @@ import com.murphyl.dataframe.Dataframe;
 import com.murphyl.dynamic.Qualifier;
 import com.murphyl.etl.utils.TaskStepUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.text.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,7 +61,7 @@ public class TextFileLoader implements Loader {
             if (null == col) {
                 return StringUtils.EMPTY;
             } else {
-                return String.format(COL_WRAPPER, StringEscapeUtils.escapeJava(col.toString()));
+                return String.format(COL_WRAPPER, col.toString());
             }
         }).collect(Collectors.joining(SEPARATOR)).trim();
     }

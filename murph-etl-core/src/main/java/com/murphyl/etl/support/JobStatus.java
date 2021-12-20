@@ -8,9 +8,13 @@ package com.murphyl.etl.support;
  */
 public enum JobStatus {
 
-    FAILURE(0),
-    SUCCESS(1),
-    SUBMITTED(2),
+
+    SUCCESS(200),
+    ACCEPTED(201),
+    NO_CONTENT(204),
+    FAILURE(500),
+    NOT_IMPLEMENTED(501),
+    TIMEOUT(504)
     ;
 
     public final int code;

@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <etl-job name="测试任务 004" debug="true">
+    <params>
+        <assign name="memory_sqlite" value="${datasource:connect('jdbc:sqlite:file::memory:?cache=shared')}" />
+    </params>
     <task name="hello-0000">
         <loader type="jdbc" datasource="${memory_sqlite}">
             <![CDATA[

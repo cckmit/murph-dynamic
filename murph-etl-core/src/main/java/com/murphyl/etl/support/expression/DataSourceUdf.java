@@ -1,8 +1,6 @@
 package com.murphyl.etl.support.expression;
 
 import com.murphyl.datasource.DataSourceBuilder;
-import com.murphyl.dynamic.Qualifier;
-import com.murphyl.expression.core.MurphExprUdf;
 
 import javax.sql.DataSource;
 import java.util.Map;
@@ -14,8 +12,7 @@ import java.util.Properties;
  * @date: 2021/12/7 9:33
  * @author: murph
  */
-@Qualifier("datasource")
-public class DataSourceFunctions implements MurphExprUdf {
+public class DataSourceUdf {
 
     public DataSource connect(String url) {
         return connect(url, null);

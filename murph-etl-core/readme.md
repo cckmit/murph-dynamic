@@ -6,6 +6,7 @@
 
 ## 参考资料
 
+- https://github.com/freva/ascii-table
 - https://github.com/networknt/json-schema-validator
 - https://json-schema.org/learn/getting-started-step-by-step.html
 - https://github.com/networknt/json-schema-validator/blob/master/doc/config.md

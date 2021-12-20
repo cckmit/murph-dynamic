@@ -1,9 +1,10 @@
 package com.murphyl.etl.core.task.loader;
 
+import com.github.freva.asciitable.AsciiTable;
 import com.murphyl.dataframe.Dataframe;
-import com.murphyl.dataframe.support.AsciiTable;
 import com.murphyl.dynamic.Qualifier;
 import com.murphyl.etl.utils.TaskStepUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,12 +26,12 @@ public class ConsoleLoader implements Loader {
     @Override
     public void load(String dsl, Dataframe dataframe, Map<String, Object> stepProps) {
         Integer batchSize = TaskStepUtils.getBatchSize(stepProps);
-        AsciiTable at = new AsciiTable(dataframe);
-        int from, to;
+        String[] headers = dataframe.getHeaders();
         for (int batchNo = 0; batchSize * batchNo < dataframe.height(); batchNo++) {
-            from = batchNo * batchSize;
-            to = (batchNo + 1) * batchSize;
-            logger.info("show dataframe from {} to {}: \n{}", from, to, at.render(from, to));
+            int from = batchNo * batchSize;
+            int to = (batchNo + 1) * batchSize;
+            Object[][] values = ArrayUtils.subarray(dataframe.getValues(), from, to);
+            logger.info("show dataframe from {} to {}: \n{}", from, to, AsciiTable.getTable(headers, values));
         }
     }
 
