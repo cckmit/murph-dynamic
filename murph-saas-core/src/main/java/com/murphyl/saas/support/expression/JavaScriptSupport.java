@@ -36,13 +36,14 @@ public final class JavaScriptSupport {
 
     static {
         // options: js.atomics, js.v8-compat, js.esm-eval-returns-exports
-        SCRIPT_LANGUAGE = Environments.getString("app.script.engine");
-        Config config = Environments.getConfig("script.engine." + SCRIPT_LANGUAGE);
+        Config settings = Environments.getConfig("script.engine");
+        SCRIPT_LANGUAGE = settings.getString("current");
+        Config config = settings.getConfig("options").getConfig(SCRIPT_LANGUAGE);
         Set<Map.Entry<String, ConfigValue>> entries = config.entrySet();
         Map<String, String> options = new HashMap<>(entries.size());
         for (Map.Entry<String, ConfigValue> entry : entries) {
             if (null != entry.getValue()) {
-                options.put(SCRIPT_LANGUAGE + '.' + entry.getKey(), entry.getValue().unwrapped().toString());
+                options.put(entry.getKey(), entry.getValue().render());
             }
         }
         CONTEXT_BUILDER = Context.newBuilder(SCRIPT_LANGUAGE)
@@ -50,10 +51,9 @@ public final class JavaScriptSupport {
                 .options(options)
                 .allowExperimentalOptions(true)
                 .allowHostAccess(HostAccess.ALL)
-                .currentWorkingDirectory(Path.of(Environments.getString("user.dir"), "murph-saas-core/src/main/resources/META-INF/javascript/"));
+                .currentWorkingDirectory(Path.of(settings.getString("cwd")));
 
         if (JavaScriptLanguage.ID.equalsIgnoreCase(SCRIPT_LANGUAGE)) {
-            CONTEXT_BUILDER.option(JSContextOptions.ESM_EVAL_RETURNS_EXPORTS_NAME, "true");
             SCRIPT_MIME_TYPE = JavaScriptLanguage.MODULE_MIME_TYPE;
         } else {
             SCRIPT_MIME_TYPE = null;

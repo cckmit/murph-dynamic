@@ -5,10 +5,13 @@ import com.murphyl.saas.support.DynamicModule;
 import com.murphyl.saas.support.Environments;
 import com.murphyl.saas.support.expression.JavaScriptSupport;
 import com.murphyl.saas.support.feature.rest.RestProxy;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigValue;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
+import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.net.impl.SocketAddressImpl;
 import io.vertx.ext.web.Router;
@@ -37,10 +40,10 @@ public class RestFeature extends AbstractVerticle implements SaasFeature {
 
     private HttpServer httpServer;
 
-    private Map<String, String> DEFAULT_HEADERS = new TreeMap<>();
+    private Config config;
 
     public RestFeature() {
-        DEFAULT_HEADERS.put("X-APP-NAME", Environments.getString("app.name"));
+        config = Environments.getConfig(unique());
     }
 
     @Override
@@ -56,7 +59,17 @@ public class RestFeature extends AbstractVerticle implements SaasFeature {
         httpServer = getVertx().createHttpServer();
         Router router = Router.router(vertx);
         // favicon
-        router.route().handler(new FaviconHandlerImpl(vertx));
+        router.route().handler(new FaviconHandlerImpl(vertx)).handler(ctx -> {
+            Config headers = config.getConfig("headers");
+            HttpServerResponse response = ctx.response();
+            for (Map.Entry<String, ConfigValue> entry : headers.entrySet()) {
+                if (null == entry.getValue()) {
+                    continue;
+                }
+                response.putHeader(entry.getKey(), entry.getValue().unwrapped().toString());
+            }
+            ctx.next();
+        });
         // root
         router.mountSubRouter("/", home());
         // dash
@@ -103,7 +116,18 @@ public class RestFeature extends AbstractVerticle implements SaasFeature {
 
     private Router dash() {
         String src = "export { default } from 'test.home.js';";
+        Config options = config.getConfig("dash");
         Router router = Router.router(vertx);
+        router.route().handler(ctx -> {
+            HttpServerResponse response = ctx.response();
+            for (Map.Entry<String, ConfigValue> entry : options.getConfig("headers").entrySet()) {
+                if (null == entry.getValue()) {
+                    continue;
+                }
+                response.putHeader(entry.getKey(), entry.getValue().unwrapped().toString());
+            }
+            ctx.next();
+        });
         Map<String, Object> params = new HashMap<>(2);
         params.put("logger", logger);
         Value exports = JavaScriptSupport.eval(JavaScriptSupport.createSource(src), params);

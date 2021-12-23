@@ -14,7 +14,7 @@ public final class Environments {
     private final static Config CONFIG;
 
     static {
-        CONFIG = ConfigFactory.load().resolve();
+        CONFIG = ConfigFactory.load();
     }
 
     public static boolean getBoolean(String key) {
