@@ -1,1 +1,2 @@
 - [ ] [add json schema](https://mvnrepository.com/artifact/com.networknt/json-schema-validator/1.0.64)
+- [ ] [集成 GrralJS 执行引擎](https://www.graalvm.org/reference-manual/js/Options/)

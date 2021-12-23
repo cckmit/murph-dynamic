@@ -1,8 +1,7 @@
 package com.murphyl.saas;
 
-import com.murphyl.saas.core.AppContext;
+import com.murphyl.saas.support.Environments;
 import com.murphyl.saas.core.SaasFeature;
-import com.murphyl.saas.feature.RestFeature;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Promise;
@@ -24,17 +23,23 @@ public class SaasApplication extends AbstractVerticle {
     @Override
     public void start(Promise<Void> startPromise) throws Exception {
         super.start(startPromise);
-        /**
+        // 禁用 GraalJS 的告警日志
+        System.setProperty("polyglot.engine.WarnInterpreterOnly", "false");
+        // 初始化动态特征执行环境
+        int workerPoolSize = Environments.getInt("app.pool.size");
+        logger.info("应用核心线程池容量：{}", workerPoolSize);
+        DeploymentOptions options = new DeploymentOptions();
+        options.setWorkerPoolName("app-feature").setWorkerPoolSize(workerPoolSize);
+        // 发布通过 SPI 加载的动态模块
         ServiceLoader.load(SaasFeature.class).forEach(saasFeature -> {
-            if (AppContext.CONFIG.getBoolean(saasFeature.unique() + ".enable")) {
-                logger.info("加载动态插件：{}", saasFeature);
-                vertx.deployVerticle(saasFeature);
-            } else {
-                logger.info("动态插件（{}）被禁用！", saasFeature);
-            }
+            vertx.deployVerticle(saasFeature, options, result -> {
+                if (result.succeeded()) {
+                    logger.info("插件（{}）发布完成！", saasFeature);
+                } else {
+                    logger.info("插件（{}）发布出错", saasFeature, result.cause());
+                }
+            });
         });
-         **/
-        vertx.deployVerticle(RestFeature.class, new DeploymentOptions());
     }
 
     @Override
