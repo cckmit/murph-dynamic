@@ -1,4 +1,4 @@
-package com.murphyl.saas.support.expression.udf;
+package com.murphyl.saas.support.expression.functions;
 
 import com.murphyl.expresssion.core.ExpressionUdfNamespace;
 import org.slf4j.Logger;

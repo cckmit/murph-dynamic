@@ -1,4 +1,12 @@
-export default (rest) => {
+export default ({ rest, logger }) => {
     logger.info('hello, {}', Date.now());
-    return rest.json({ a: 1 });
+    rest.sendJSON({ request: 'default request' });
+}
+
+export const test = ({ rest, logger }) => {
+    rest.sendJSON({ request: 'test request' });
+}
+
+export const call = ({ rest, logger }) => {
+    rest.sendJSON({ request: 'call request' });
 }

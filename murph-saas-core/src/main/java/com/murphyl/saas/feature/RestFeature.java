@@ -3,27 +3,27 @@ package com.murphyl.saas.feature;
 import com.murphyl.saas.core.SaasFeature;
 import com.murphyl.saas.support.DynamicModule;
 import com.murphyl.saas.support.Environments;
-import com.murphyl.saas.support.expression.JavaScriptSupport;
-import com.murphyl.saas.support.feature.rest.RestProxy;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigValue;
+import com.murphyl.saas.support.expression.graaljs.proxy.LoggerProxy;
+import com.murphyl.saas.support.expression.graaljs.proxy.RestProxy;
+import com.murphyl.saas.support.rest.schema.RestRoute;
+import com.murphyl.saas.support.rest.schema.loader.RestProfileLoader;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
-import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.net.impl.SocketAddressImpl;
+import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.impl.FaviconHandlerImpl;
-import org.graalvm.polyglot.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
 /**
  * -
@@ -40,10 +40,8 @@ public class RestFeature extends AbstractVerticle implements SaasFeature {
 
     private HttpServer httpServer;
 
-    private Config config;
-
     public RestFeature() {
-        config = Environments.getConfig(unique());
+
     }
 
     @Override
@@ -59,16 +57,9 @@ public class RestFeature extends AbstractVerticle implements SaasFeature {
         httpServer = getVertx().createHttpServer();
         Router router = Router.router(vertx);
         // favicon
-        router.route().handler(new FaviconHandlerImpl(vertx)).handler(ctx -> {
-            Config headers = config.getConfig("headers");
-            HttpServerResponse response = ctx.response();
-            for (Map.Entry<String, ConfigValue> entry : headers.entrySet()) {
-                if (null == entry.getValue()) {
-                    continue;
-                }
-                response.putHeader(entry.getKey(), entry.getValue().unwrapped().toString());
-            }
-            ctx.next();
+        router.route().order(0).handler(new FaviconHandlerImpl(vertx)).failureHandler(ctx -> {
+            logger.info("请求出错", ctx.failure());
+            ctx.end("error");
         });
         // root
         router.mountSubRouter("/", home());
@@ -109,34 +100,29 @@ public class RestFeature extends AbstractVerticle implements SaasFeature {
     }
 
     private Router home() {
+
         Router router = Router.router(vertx);
-        router.route(HttpMethod.GET, "/").handler(ctx -> ctx.end("home"));
+        router.route(HttpMethod.GET, "/").handler(ctx -> ctx.json("home"));
+        List<RestRoute> routes = RestProfileLoader.getInstance().load();
+        for (RestRoute rule : routes) {
+            Route route = router.route(rule.getPath());
+            if (null != rule.getMethod()) {
+                route.method(rule.getMethod());
+            }
+            route.handler(ctx -> {
+                Logger logger = LoggerFactory.getLogger(rule.getNamespace());
+                rule.getFunction().executeVoid(createArguments(logger, ctx));
+            });
+        }
         return router;
     }
 
     private Router dash() {
-        String src = "export { default } from 'test.home.js';";
-        Config options = config.getConfig("dash");
         Router router = Router.router(vertx);
-        router.route().handler(ctx -> {
-            HttpServerResponse response = ctx.response();
-            for (Map.Entry<String, ConfigValue> entry : options.getConfig("headers").entrySet()) {
-                if (null == entry.getValue()) {
-                    continue;
-                }
-                response.putHeader(entry.getKey(), entry.getValue().unwrapped().toString());
-            }
-            ctx.next();
-        });
-        Map<String, Object> params = new HashMap<>(2);
-        params.put("logger", logger);
-        Value exports = JavaScriptSupport.eval(JavaScriptSupport.createSource(src), params);
         router.get("/hello").handler((ctx) -> {
-            if (exports.hasMember("default") && exports.getMember("default").canExecute()) {
-                exports.getMember("default").executeVoid(new RestProxy(ctx));
-            } else {
-                ctx.end("TODO");
-            }
+            ctx.end("TODO");
+        }).failureHandler(ctx -> {
+            logger.info("执行脚本请求出错", ctx.failure());
         });
         router.route(HttpMethod.GET, "/").handler(ctx -> ctx.end("dash"));
         return router;
@@ -146,6 +132,13 @@ public class RestFeature extends AbstractVerticle implements SaasFeature {
         Router router = Router.router(vertx);
         router.route(HttpMethod.GET, "/").handler(ctx -> ctx.end("metrics"));
         return router;
+    }
+
+    private Map<String, Object> createArguments(Logger logger, RoutingContext context) {
+        Map<String, Object> result = new HashMap<>(2);
+        result.put("logger", new LoggerProxy(logger));
+        result.put("rest", new RestProxy(context));
+        return result;
     }
 
 }

@@ -10,7 +10,11 @@ import io.vertx.core.Verticle;
  */
 public interface SaasFeature extends Verticle {
 
+    /**
+     * 设置别名
+     *
+     * @return
+     */
     String unique();
-
 
 }

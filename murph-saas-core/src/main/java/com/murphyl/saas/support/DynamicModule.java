@@ -1,6 +1,6 @@
 package com.murphyl.saas.support;
 
-import com.google.common.base.Joiner;
+import java.util.StringJoiner;
 
 /**
  * -
@@ -27,14 +27,12 @@ public enum DynamicModule {
 
     private final String root;
 
-    private static final Joiner SETTING_PATH_JOINER = Joiner.on(SETTING_KEY_DELIMITER);
-
     DynamicModule() {
         root = name().replace(MODULE_LEVEL_DELIMITER, SETTING_KEY_DELIMITER).toLowerCase();
     }
 
     public boolean enabled() {
-        return Environments.getBoolean(SETTING_PATH_JOINER.join(root, "enable"));
+        return Environments.getBoolean(root + SETTING_KEY_DELIMITER + "enable");
     }
 
 }

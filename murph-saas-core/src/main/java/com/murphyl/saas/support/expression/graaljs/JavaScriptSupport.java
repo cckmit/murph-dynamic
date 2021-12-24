@@ -1,8 +1,7 @@
-package com.murphyl.saas.support.expression;
+package com.murphyl.saas.support.expression.graaljs;
 
 import com.murphyl.saas.support.Environments;
 import com.oracle.truffle.js.lang.JavaScriptLanguage;
-import com.oracle.truffle.js.runtime.JSContextOptions;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigValue;
 import org.graalvm.polyglot.Context;
@@ -34,6 +33,15 @@ public final class JavaScriptSupport {
 
     private static final String SCRIPT_MIME_TYPE;
 
+    private static final HostAccess ACCESS_LOCAL = HostAccess.newBuilder()
+            .allowMapAccess(true)
+            .allowListAccess(true)
+            .allowArrayAccess(true)
+            .allowAccessAnnotatedBy(HostAccess.Export.class)
+            .allowImplementationsAnnotatedBy(HostAccess.Implementable.class)
+            .allowImplementationsAnnotatedBy(FunctionalInterface.class)
+            .build();
+
     static {
         // options: js.atomics, js.v8-compat, js.esm-eval-returns-exports
         Config settings = Environments.getConfig("script.engine");
@@ -50,7 +58,11 @@ public final class JavaScriptSupport {
                 .allowIO(true)
                 .options(options)
                 .allowExperimentalOptions(true)
-                .allowHostAccess(HostAccess.ALL)
+                .allowHostAccess(ACCESS_LOCAL)
+                .allowHostClassLookup(identifier -> {
+                    logger.info("JavaScript 尝试交接 Java 对象：{}", identifier);
+                    return true;
+                })
                 .currentWorkingDirectory(Path.of(settings.getString("cwd")));
 
         if (JavaScriptLanguage.ID.equalsIgnoreCase(SCRIPT_LANGUAGE)) {
@@ -60,23 +72,12 @@ public final class JavaScriptSupport {
         }
     }
 
+    public static Value eval(String source) {
+        return eval(createSource(source));
+    }
 
-    public static Value eval(Source source, Map<String, ?> params) {
-        Context context = CONTEXT_BUILDER.build();
-        if (null != params && !params.isEmpty()) {
-            Value bindings = context.getBindings(SCRIPT_LANGUAGE);
-            for (Map.Entry<String, ?> entry : params.entrySet()) {
-                if (null == entry.getValue()) {
-                    continue;
-                }
-                bindings.putMember(entry.getKey(), entry.getValue());
-            }
-        }
-        try {
-            return context.eval(source);
-        } finally {
-            // context.close();
-        }
+    public static Value eval(Source source) {
+        return CONTEXT_BUILDER.build().eval(source);
     }
 
     public static Source createSource(String script) {
@@ -87,7 +88,7 @@ public final class JavaScriptSupport {
         }
     }
 
-    public static boolean isValid(Value exports) {
-        return null != exports && exports.hasMembers();
+    public static Value export(Value exports, String key) {
+        return (null != exports && exports.hasMembers()) ? exports.getMember(key) : null;
     }
 }
