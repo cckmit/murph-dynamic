@@ -55,6 +55,6 @@ public interface RestRouteSchemaManager {
      * @return
      * @throws Exception
      */
-    List<RestRoute> loadRoutes();
+    List<RestRoute> load();
 
 }

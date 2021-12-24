@@ -41,7 +41,7 @@ public class FilesystemRestRouteSchemaManager implements RestRouteSchemaManager 
     }
 
     @Override
-    public List<RestRoute> loadRoutes() {
+    public List<RestRoute> load() {
         Collection<File> files = FileUtils.list(root.toFile(), true);
         Map<String, File> scripts = new HashMap<>(files.size());
         for (File file : files) {

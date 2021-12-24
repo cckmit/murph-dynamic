@@ -18,7 +18,7 @@ public class JdbcRestProfileLoader implements RestRouteSchemaManager {
     }
 
     @Override
-    public List<RestRoute> loadRoutes() {
+    public List<RestRoute> load() {
         return null;
     }
 }

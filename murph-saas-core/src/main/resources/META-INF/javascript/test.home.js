@@ -8,5 +8,5 @@ export const test = ({ rest, logger }) => {
 }
 
 export const call = ({ rest, logger }) => {
-    rest.sendJSON({ request: 'call request' });
+    rest.sendJSON({ request: 'call v1 request' });
 }
