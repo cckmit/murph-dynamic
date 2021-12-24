@@ -1,6 +1,6 @@
 package com.murphyl.saas.support.rest.schema;
 
-import io.vertx.core.http.HttpMethod;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.graalvm.polyglot.Value;
 
 /**
@@ -13,10 +13,15 @@ public class RestRoute {
 
     private String namespace;
 
-    private HttpMethod method;
+    private String file;
+
+    private Long modified;
+
+    private String method;
 
     private String path;
 
+    @JsonIgnore
     private Value function;
 
     public String getNamespace() {
@@ -27,11 +32,27 @@ public class RestRoute {
         this.namespace = namespace;
     }
 
-    public HttpMethod getMethod() {
+    public String getFile() {
+        return file;
+    }
+
+    public void setFile(String file) {
+        this.file = file;
+    }
+
+    public Long getModified() {
+        return modified;
+    }
+
+    public void setModified(Long modified) {
+        this.modified = modified;
+    }
+
+    public String getMethod() {
         return method;
     }
 
-    public void setMethod(HttpMethod method) {
+    public void setMethod(String method) {
         this.method = method;
     }
 

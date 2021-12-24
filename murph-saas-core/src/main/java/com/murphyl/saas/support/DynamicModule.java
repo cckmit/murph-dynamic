@@ -1,7 +1,5 @@
 package com.murphyl.saas.support;
 
-import java.util.StringJoiner;
-
 /**
  * -
  *
@@ -11,7 +9,7 @@ import java.util.StringJoiner;
 public enum DynamicModule {
 
     REST_DAPI,
-    REST_DASH,
+    REST_DEVOPS,
     REST_METRICS,
 
     ;

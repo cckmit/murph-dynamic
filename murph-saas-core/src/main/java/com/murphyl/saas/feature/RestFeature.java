@@ -6,7 +6,7 @@ import com.murphyl.saas.support.Environments;
 import com.murphyl.saas.support.expression.graaljs.proxy.LoggerProxy;
 import com.murphyl.saas.support.expression.graaljs.proxy.RestProxy;
 import com.murphyl.saas.support.rest.schema.RestRoute;
-import com.murphyl.saas.support.rest.schema.loader.RestProfileLoader;
+import com.murphyl.saas.support.rest.schema.loader.RestRouteSchemaManager;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.http.HttpMethod;
@@ -38,10 +38,15 @@ public class RestFeature extends AbstractVerticle implements SaasFeature {
     private static final String SERVER_HOST_KEY = "server.host";
     private static final String SERVER_PORT_KEY = "server.port";
 
+    private final RestRouteSchemaManager routeSchemaManager;
+
+    private final List<RestRoute> routes;
+
     private HttpServer httpServer;
 
     public RestFeature() {
-
+        routeSchemaManager = RestRouteSchemaManager.getInstance();
+        routes = routeSchemaManager.loadRoutes();
     }
 
     @Override
@@ -64,8 +69,8 @@ public class RestFeature extends AbstractVerticle implements SaasFeature {
         // root
         router.mountSubRouter("/", home());
         // dash
-        if (DynamicModule.REST_DASH.enabled()) {
-            router.mountSubRouter("/_/dash", dash());
+        if (DynamicModule.REST_DEVOPS.enabled()) {
+            router.mountSubRouter("/_/devops", devops());
         }
         // metrics
         if (DynamicModule.REST_METRICS.enabled()) {
@@ -100,14 +105,12 @@ public class RestFeature extends AbstractVerticle implements SaasFeature {
     }
 
     private Router home() {
-
         Router router = Router.router(vertx);
         router.route(HttpMethod.GET, "/").handler(ctx -> ctx.json("home"));
-        List<RestRoute> routes = RestProfileLoader.getInstance().load();
         for (RestRoute rule : routes) {
             Route route = router.route(rule.getPath());
             if (null != rule.getMethod()) {
-                route.method(rule.getMethod());
+                route.method(HttpMethod.valueOf(rule.getMethod()));
             }
             route.handler(ctx -> {
                 Logger logger = LoggerFactory.getLogger(rule.getNamespace());
@@ -117,13 +120,42 @@ public class RestFeature extends AbstractVerticle implements SaasFeature {
         return router;
     }
 
-    private Router dash() {
+    private Router devops() {
         Router router = Router.router(vertx);
-        router.get("/hello").handler((ctx) -> {
-            ctx.end("TODO");
-        }).failureHandler(ctx -> {
-            logger.info("执行脚本请求出错", ctx.failure());
-        });
+        router.route("/routes")
+                .method(HttpMethod.GET).handler((ctx) -> {
+                    ctx.json(routes);
+                })
+                .method(HttpMethod.POST).handler(ctx -> {
+                    ctx.end("ADDED");
+                });
+
+        router.route("/routes/reload")
+                .method(HttpMethod.GET).handler(ctx -> {
+                    logger.info("正在重新加载路由配置……");
+                    Router previewRouter = Router.router(vertx);
+                    List<RestRoute> loaded = routeSchemaManager.loadRoutes();
+                    ctx.json(loaded);
+                    router.mountSubRouter("/preview", previewRouter);
+                    for (RestRoute rule : loaded) {
+                        Route route = previewRouter.route(rule.getPath());
+                        if (null != rule.getMethod()) {
+                            route.method(HttpMethod.valueOf(rule.getMethod()));
+                        }
+                        route.handler(sub -> {
+                            Logger logger = LoggerFactory.getLogger(rule.getNamespace());
+                            rule.getFunction().executeVoid(createArguments(logger, sub));
+                        });
+                    }
+                })
+                .method(HttpMethod.DELETE).handler(ctx -> {
+                    router.mountSubRouter("/preview", Router.router(vertx));
+                    ctx.end("OK");
+                });
+        router.route()
+                .failureHandler(ctx -> {
+                    logger.info("执行脚本请求出错", ctx.failure());
+                });
         router.route(HttpMethod.GET, "/").handler(ctx -> ctx.end("dash"));
         return router;
     }

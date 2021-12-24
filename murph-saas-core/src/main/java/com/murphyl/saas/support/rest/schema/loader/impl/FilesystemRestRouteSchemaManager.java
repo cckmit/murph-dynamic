@@ -2,9 +2,8 @@ package com.murphyl.saas.support.rest.schema.loader.impl;
 
 import com.murphyl.saas.support.expression.graaljs.JavaScriptSupport;
 import com.murphyl.saas.support.rest.schema.RestRoute;
-import com.murphyl.saas.support.rest.schema.loader.RestProfileLoader;
+import com.murphyl.saas.support.rest.schema.loader.RestRouteSchemaManager;
 import com.murphyl.saas.utils.FileUtils;
-import io.vertx.core.http.HttpMethod;
 import org.apache.commons.lang3.StringUtils;
 import org.graalvm.polyglot.Value;
 import org.slf4j.Logger;
@@ -21,14 +20,14 @@ import java.util.*;
  * @date: 2021/12/24 15:37
  * @author: hao.luo <hao.luo@china.zhaogang.com>
  */
-public class FilesystemRestProfileLoader implements RestProfileLoader {
+public class FilesystemRestRouteSchemaManager implements RestRouteSchemaManager {
 
-    private static final Logger logger = LoggerFactory.getLogger(FilesystemRestProfileLoader.class);
+    private static final Logger logger = LoggerFactory.getLogger(FilesystemRestRouteSchemaManager.class);
 
     private final Path root;
     private final Map<String, Map<String, String>> routes;
 
-    public FilesystemRestProfileLoader(Map<String, Object> options) {
+    public FilesystemRestRouteSchemaManager(Map<String, Object> options) {
         Object path = options.get("path");
         Objects.requireNonNull(path, "从文件系统加载 Rest 配置时必须通过配置项[rest.profile.options.path]指定脚本路径");
         logger.info("从文件系统加载 Rest 配置：{}", path);
@@ -42,17 +41,17 @@ public class FilesystemRestProfileLoader implements RestProfileLoader {
     }
 
     @Override
-    public List<RestRoute> load() {
+    public List<RestRoute> loadRoutes() {
         Collection<File> files = FileUtils.list(root.toFile(), true);
-        Map<String, String> scripts = new HashMap<>(files.size());
+        Map<String, File> scripts = new HashMap<>(files.size());
         for (File file : files) {
-            scripts.put(root.relativize(file.toPath()).toString(), FileUtils.read(file));
+            scripts.put(root.relativize(file.toPath()).toString(), file);
         }
         List<RestRoute> result = new ArrayList<>();
         for (Map.Entry<String, Map<String, String>> route : routes.entrySet()) {
             String filename = route.getKey();
-            String script = scripts.get(Path.of(filename).normalize().toString());
-            Value exports = JavaScriptSupport.eval(script);
+            File script = scripts.get(Path.of(filename).normalize().toString());
+            Value exports = JavaScriptSupport.eval(FileUtils.read(script));
             Map<String, String> table = route.getValue();
             if (null == table || table.isEmpty()) {
                 throw new IllegalStateException("Rest 模块[" + filename + "]路由表配置不能为空");
@@ -68,14 +67,16 @@ public class FilesystemRestProfileLoader implements RestProfileLoader {
                     continue;
                 }
                 logger.info("正在注册路由规则：file=[{}], endpoint=[{}], binding=[{}]", filename, module, rule.getValue());
-                result.add(convert(filename, module, rule.getValue(), exports.getMember(module)));
+                result.add(convert(filename, script, module, rule.getValue(), exports.getMember(module)));
             }
         }
         return result;
     }
 
-    private RestRoute convert(String filename, String endpoint, String head, Value function) {
+    private RestRoute convert(String filename, File script, String endpoint, String head, Value function) {
         RestRoute result = new RestRoute();
+        result.setFile(script.getAbsolutePath());
+        result.setModified(script.lastModified());
         result.setNamespace(namespace("file", filename, endpoint));
         result.setFunction(function);
         String[] parts = StringUtils.split(head, " ", 2);
@@ -83,7 +84,7 @@ public class FilesystemRestProfileLoader implements RestProfileLoader {
             result.setPath(StringUtils.trim(parts[0]));
         } else {
             try {
-                result.setMethod(HttpMethod.valueOf(StringUtils.trim(parts[0])));
+                result.setMethod(parts[0]);
             } catch (Exception e) {
                 throw new IllegalStateException("路由配置（" + head + "）存在问题，指定的请求方法不存在：" + parts[0]);
             }
