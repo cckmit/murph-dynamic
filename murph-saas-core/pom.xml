@@ -58,12 +58,6 @@
             <artifactId>js</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.murphyl</groupId>
-            <artifactId>murph-expr-jexl3</artifactId>
-            <version>1.0</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
             <scope>test</scope>

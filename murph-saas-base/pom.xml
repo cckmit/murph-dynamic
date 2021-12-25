@@ -18,6 +18,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>com.murphyl</groupId>
+            <artifactId>murph-dynamic-x</artifactId>
+            <version>1.0</version>
+        </dependency>
+        <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
         </dependency>

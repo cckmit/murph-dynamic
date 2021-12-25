@@ -1,19 +1,14 @@
 package com.murphyl.saas.core;
 
+import com.murphyl.dynamic.NamedFeature;
+
 /**
  * -
  *
  * @author: murph
  * @date: 2021/12/22 - 23:56
  */
-public interface SaasFeature<T>  {
-
-    /**
-     * 设置别名
-     *
-     * @return
-     */
-    String unique();
+public interface SaasFeature<T> extends NamedFeature {
 
     /**
      * 依赖项
