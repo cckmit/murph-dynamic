@@ -1,8 +1,8 @@
 package com.murphyl.saas.support.expression.graaljs;
 
-import com.murphyl.saas.support.Environments;
 import com.oracle.truffle.js.lang.JavaScriptLanguage;
 import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigValue;
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.HostAccess;
@@ -44,7 +44,7 @@ public final class JavaScriptSupport {
 
     static {
         // options: js.atomics, js.v8-compat, js.esm-eval-returns-exports
-        Config settings = Environments.getConfig("script.engine");
+        Config settings = ConfigFactory.load().getConfig("script.engine");
         SCRIPT_LANGUAGE = settings.getString("current");
         Config config = settings.getConfig("options").getConfig(SCRIPT_LANGUAGE);
         Set<Map.Entry<String, ConfigValue>> entries = config.entrySet();

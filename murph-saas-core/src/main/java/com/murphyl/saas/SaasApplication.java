@@ -1,7 +1,11 @@
 package com.murphyl.saas;
 
-import com.murphyl.saas.support.Environments;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.murphyl.saas.core.SaasContextModule;
 import com.murphyl.saas.core.SaasFeature;
+import com.murphyl.saas.support.SaasVerticle;
+import com.typesafe.config.Config;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Promise;
@@ -20,19 +24,25 @@ public class SaasApplication extends AbstractVerticle {
 
     private static final Logger logger = LoggerFactory.getLogger(SaasApplication.class);
 
+    static {
+        // 禁用 GraalJS 的告警日志
+        System.setProperty("polyglot.engine.WarnInterpreterOnly", "false");
+    }
+
     @Override
     public void start(Promise<Void> startPromise) throws Exception {
         super.start(startPromise);
-        // 禁用 GraalJS 的告警日志
-        System.setProperty("polyglot.engine.WarnInterpreterOnly", "false");
+        Injector injector = Guice.createInjector(new SaasContextModule());
+        Config env = injector.getInstance(Config.class);
         // 初始化动态特征执行环境
-        int workerPoolSize = Environments.getInt("app.pool.size");
+        int workerPoolSize = env.getInt("app.pool.size");
         logger.info("应用核心线程池容量：{}", workerPoolSize);
-        DeploymentOptions options = new DeploymentOptions();
-        options.setWorkerPoolName("app-feature").setWorkerPoolSize(workerPoolSize);
+        DeploymentOptions options = new DeploymentOptions()
+                .setWorker(true).setWorkerPoolName("saas-feature").setWorkerPoolSize(workerPoolSize);
         // 发布通过 SPI 加载的动态模块
         ServiceLoader.load(SaasFeature.class).forEach(saasFeature -> {
-            vertx.deployVerticle(saasFeature, options, result -> {
+            injector.injectMembers(saasFeature);
+            vertx.deployVerticle(new SaasVerticle(saasFeature), options, result -> {
                 if (result.succeeded()) {
                     logger.info("插件（{}）发布完成！", saasFeature);
                 } else {
