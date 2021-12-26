@@ -8,9 +8,11 @@ import java.util.Map;
  * @date: 2021/12/24 15:53
  * @author: murph
  */
-public class RestProfile {
+public class RouteProfile {
 
     private String loader;
+
+    private Map<String, Object> loaders;
 
     private Map<String, Object> options;
 
@@ -20,6 +22,14 @@ public class RestProfile {
 
     public void setLoader(String loader) {
         this.loader = loader;
+    }
+
+    public Map<String, Object> getLoaders() {
+        return loaders;
+    }
+
+    public void setLoaders(Map<String, Object> loaders) {
+        this.loaders = loaders;
     }
 
     public Map<String, Object> getOptions() {

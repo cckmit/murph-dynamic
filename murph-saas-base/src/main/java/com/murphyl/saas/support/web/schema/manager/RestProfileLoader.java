@@ -2,9 +2,7 @@ package com.murphyl.saas.support.web.schema.manager;
 
 import com.murphyl.dynamic.NamedFeature;
 
-import java.util.Iterator;
 import java.util.List;
-import java.util.ServiceLoader;
 
 /**
  * Rest - 配置加载器
@@ -12,14 +10,14 @@ import java.util.ServiceLoader;
  * @date: 2021/12/24 15:35
  * @author: murph
  */
-public interface RestRouteSchemaManager extends NamedFeature {
+public interface RestProfileLoader extends NamedFeature {
 
     /**
      * 构造实例
      *
      * @return
      */
-    static RestRouteSchemaManager getInstance(String name) {
+    static RestProfileLoader getInstance(String name) {
         if (null == name || name.trim().length() == 0) {
             throw new IllegalStateException("加载 Rest 模块的配置出错");
         }

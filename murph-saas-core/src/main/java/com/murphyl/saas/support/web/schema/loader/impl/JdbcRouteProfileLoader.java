@@ -1,20 +1,20 @@
 package com.murphyl.saas.support.web.schema.loader.impl;
 
 import com.murphyl.saas.support.web.schema.RestRoute;
-import com.murphyl.saas.support.web.schema.manager.RestRouteSchemaManager;
-import com.typesafe.config.Config;
+import com.murphyl.saas.support.web.schema.manager.RestProfileLoader;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * JDBC - Rest 配置加载
  *
  * @date: 2021/12/24 15:37
- * @author: hao.luo <hao.luo@china.zhaogang.com>
+ * @author: murph
  */
-public class JdbcRestProfileLoader implements RestRouteSchemaManager {
+public class JdbcRouteProfileLoader implements RestProfileLoader {
 
-    public JdbcRestProfileLoader(Config options) {
+    public JdbcRouteProfileLoader(Map<String, Object> options) {
     }
 
     @Override

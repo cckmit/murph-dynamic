@@ -1,15 +1,14 @@
 package com.murphyl.saas.features;
 
 import com.murphyl.saas.core.SaasFeature;
-import com.murphyl.saas.modules.web.DevOpsRestFacade;
-import com.murphyl.saas.modules.web.PublicRestFacade;
+import com.murphyl.saas.modules.web.DevOpsServerFacade;
+import com.murphyl.saas.modules.web.PublicServerFacade;
 import com.murphyl.saas.support.expression.graaljs.proxy.LoggerProxy;
 import com.murphyl.saas.support.expression.graaljs.proxy.RestProxy;
-import com.murphyl.saas.support.web.schema.RestProfile;
 import com.murphyl.saas.support.web.schema.RestRoute;
-import com.murphyl.saas.support.web.schema.manager.RestRouteSchemaManager;
+import com.murphyl.saas.support.web.schema.RouteProfileLoaderBuilder;
+import com.murphyl.saas.support.web.schema.manager.RestProfileLoader;
 import com.typesafe.config.Config;
-import com.typesafe.config.ConfigBeanFactory;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
@@ -31,7 +30,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
 
 /**
  * Web 门面 - 特征
@@ -47,22 +45,22 @@ public class WebFacadeFeature implements SaasFeature<Vertx> {
     private Config env;
 
     @Inject
-    private PublicRestFacade publicRestFacade;
+    private PublicServerFacade publicRestFacade;
 
     @Inject
-    private DevOpsRestFacade devOpsRestFacade;
+    private DevOpsServerFacade devOpsRestFacade;
 
     private static final String SERVER_HOST_KEY = "server.host";
     private static final String SERVER_PORT_KEY = "server.port";
 
-    private RestRouteSchemaManager routeSchemaManager;
+    private RestProfileLoader routeSchemaManager;
 
     private HttpServer httpServer;
 
     private Map<String, RestRoute<Value>> routesTable;
 
     @Inject
-    private Function<String, RestRouteSchemaManager> restRouteSchemaManagerBuilder;
+    private RouteProfileLoaderBuilder restRouteSchemaManagerBuilder;
 
     @Override
     public String name() {
@@ -71,8 +69,7 @@ public class WebFacadeFeature implements SaasFeature<Vertx> {
 
     @Override
     public void init(Vertx vertx) {
-        RestProfile profile = ConfigBeanFactory.create(env.getConfig("rest.profile"), RestProfile.class);
-        routeSchemaManager = restRouteSchemaManagerBuilder.apply(profile.getLoader());
+        RestProfileLoader routeSchemaManager = restRouteSchemaManagerBuilder.build();
         List<RestRoute> routes = routeSchemaManager.load();
         routesTable = new ConcurrentHashMap<>();
         for (RestRoute<Value> route : routes) {

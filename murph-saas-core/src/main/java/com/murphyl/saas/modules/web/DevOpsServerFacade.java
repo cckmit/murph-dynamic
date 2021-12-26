@@ -16,14 +16,14 @@ import javax.inject.Inject;
  * @author: murph
  * @date: 2021/12/26 - 0:58
  */
-public class DevOpsRestFacade extends AbstractVerticle implements NamedFeature {
+public class DevOpsServerFacade extends AbstractVerticle implements NamedFeature {
 
-    private static final Logger logger = LoggerFactory.getLogger(DevOpsRestFacade.class);
+    private static final Logger logger = LoggerFactory.getLogger(DevOpsServerFacade.class);
 
     private final Options options;
 
     @Inject
-    public DevOpsRestFacade(Config env) {
+    public DevOpsServerFacade(Config env) {
         this.options = ConfigBeanFactory.create(env.getConfig(name()), Options.class);
     }
 

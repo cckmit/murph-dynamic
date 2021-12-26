@@ -11,9 +11,9 @@ import org.slf4j.LoggerFactory;
  * @author: murph
  * @date: 2021/12/26 - 0:58
  */
-public class PublicRestFacade extends AbstractVerticle {
+public class PublicServerFacade extends AbstractVerticle {
 
-    private static final Logger logger = LoggerFactory.getLogger(PublicRestFacade.class);
+    private static final Logger logger = LoggerFactory.getLogger(PublicServerFacade.class);
 
     @Override
     public void start(Promise<Void> startPromise) throws Exception {

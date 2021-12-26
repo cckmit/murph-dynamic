@@ -1,8 +1,6 @@
 package com.murphyl.saas.core;
 
 import com.google.inject.AbstractModule;
-import com.google.inject.Provides;
-import com.murphyl.saas.support.web.schema.manager.RestRouteSchemaManager;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigObject;
@@ -12,8 +10,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Singleton;
 import java.util.Map;
-import java.util.Objects;
-import java.util.function.Function;
 
 /**
  * IoC - 上下文怕配置
@@ -47,23 +43,6 @@ public class SaasContextModule extends AbstractModule {
         for (Map.Entry<String, ConfigValue> entry : dataSources.entrySet()) {
             logger.info("TODO - 正在初始化数据源：{}", entry.getKey());
         }
-    }
-
-    @Provides
-    @Singleton
-    public Function<String, RestRouteSchemaManager> restRouteSchemaManagerBuilder(Config config) {
-        ConfigObject managers = config.getObject("app.route.schema.manager");
-        return (name) -> {
-            ConfigValue managerName = managers.get(name);
-            Objects.requireNonNull(managerName, "指定的 Web 服务路由配置管理器（" + name + "）不存在");
-            try {
-                Class managerClass = Class.forName(managerName.unwrapped().toString());
-                Config options = config.getConfig("rest.profile.options");
-                return (RestRouteSchemaManager) managerClass.getConstructor(Config.class).newInstance(options);
-            } catch (Exception e) {
-                throw new IllegalStateException(e);
-            }
-        };
     }
 
 }

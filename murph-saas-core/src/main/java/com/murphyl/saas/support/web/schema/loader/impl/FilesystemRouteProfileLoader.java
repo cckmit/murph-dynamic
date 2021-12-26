@@ -2,11 +2,8 @@ package com.murphyl.saas.support.web.schema.loader.impl;
 
 import com.murphyl.saas.support.expression.graaljs.JavaScriptSupport;
 import com.murphyl.saas.support.web.schema.RestRoute;
-import com.murphyl.saas.support.web.schema.manager.RestRouteSchemaManager;
+import com.murphyl.saas.support.web.schema.manager.RestProfileLoader;
 import com.murphyl.saas.utils.FileUtils;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigObject;
-import com.typesafe.config.ConfigValue;
 import org.apache.commons.lang3.StringUtils;
 import org.graalvm.polyglot.Value;
 import org.slf4j.Logger;
@@ -21,24 +18,24 @@ import java.util.*;
  * Filesystem - Rest 配置加载
  *
  * @date: 2021/12/24 15:37
- * @author: hao.luo <hao.luo@china.zhaogang.com>
+ * @author: murph
  */
-public class FilesystemRestRouteSchemaManager implements RestRouteSchemaManager {
+public class FilesystemRouteProfileLoader implements RestProfileLoader {
 
-    private static final Logger logger = LoggerFactory.getLogger(FilesystemRestRouteSchemaManager.class);
+    private static final Logger logger = LoggerFactory.getLogger(FilesystemRouteProfileLoader.class);
 
     private final Path root;
-    private final ConfigObject routes;
+    private final Map<String, Map<String, String>> routes;
 
-    public FilesystemRestRouteSchemaManager(Config options) {
-        String path = options.getString("path");
+    public FilesystemRouteProfileLoader(Map<String, Object> options) {
+        Object path = options.get("path");
         Objects.requireNonNull(path, "从文件系统加载 Rest 配置时必须通过配置项[rest.profile.options.path]指定脚本路径");
         logger.info("从文件系统加载 Rest 配置：{}", path);
-        this.root = Path.of(path);
+        this.root = Path.of((String) path);
         if (Files.notExists(root)) {
             throw new IllegalStateException("指定的 Rest 配置路径${rest.profile.options.path}在文件系统上不存在");
         }
-        this.routes = options.getObject("routes");
+        this.routes = (Map<String, Map<String, String>>) options.get("routes");
         Objects.requireNonNull(routes, "从文件系统加载 Rest 配置时必须通过配置项[rest.profile.options.routes]指定路由信息");
     }
 
@@ -55,11 +52,11 @@ public class FilesystemRestRouteSchemaManager implements RestRouteSchemaManager 
             scripts.put(root.relativize(file.toPath()).toString(), file);
         }
         List<RestRoute> result = new ArrayList<>();
-        for (Map.Entry<String, ConfigValue> route : routes.entrySet()) {
+        for (Map.Entry<String, Map<String, String>> route : routes.entrySet()) {
             String filename = route.getKey();
             File script = scripts.get(Path.of(filename).normalize().toString());
             Value exports = JavaScriptSupport.eval(FileUtils.read(script));
-            Map<String, String> table = (Map<String, String>) route.getValue().unwrapped();
+            Map<String, String> table = route.getValue();
             if (null == table) {
                 throw new IllegalStateException("Rest 模块[" + filename + "]路由表配置不能为空");
             }
