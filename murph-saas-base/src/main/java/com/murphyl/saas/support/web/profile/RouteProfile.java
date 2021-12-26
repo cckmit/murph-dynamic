@@ -1,4 +1,4 @@
-package com.murphyl.saas.support.web.schema;
+package com.murphyl.saas.support.web.profile;
 
 import java.util.Map;
 
@@ -12,8 +12,6 @@ public class RouteProfile {
 
     private String loader;
 
-    private Map<String, Object> loaders;
-
     private Map<String, Object> options;
 
     public String getLoader() {
@@ -22,14 +20,6 @@ public class RouteProfile {
 
     public void setLoader(String loader) {
         this.loader = loader;
-    }
-
-    public Map<String, Object> getLoaders() {
-        return loaders;
-    }
-
-    public void setLoaders(Map<String, Object> loaders) {
-        this.loaders = loaders;
     }
 
     public Map<String, Object> getOptions() {

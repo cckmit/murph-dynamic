@@ -9,9 +9,12 @@ import com.typesafe.config.Config;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Promise;
+import io.vertx.core.ServiceHelper;
+import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collection;
 import java.util.ServiceLoader;
 
 /**
@@ -40,16 +43,18 @@ public class SaasApplication extends AbstractVerticle {
         DeploymentOptions options = new DeploymentOptions()
                 .setWorker(true).setWorkerPoolName("saas-feature").setWorkerPoolSize(workerPoolSize);
         // 发布通过 SPI 加载的动态模块
-        ServiceLoader.load(SaasFeature.class).forEach(saasFeature -> {
+        Collection<SaasFeature> features = ServiceHelper.loadFactories(SaasFeature.class);
+        Validate.notEmpty(features, "无法通过 SPI 加载动态模块：" + SaasFeature.class.getCanonicalName());
+        for (SaasFeature saasFeature : ServiceHelper.loadFactories(SaasFeature.class)) {
             injector.injectMembers(saasFeature);
-            vertx.deployVerticle(new SaasVerticle(saasFeature), options, result -> {
-                if (result.succeeded()) {
+            vertx.deployVerticle(new SaasVerticle(saasFeature), options, deployed -> {
+                if (deployed.succeeded()) {
                     logger.info("插件（{}）发布完成！", saasFeature);
                 } else {
-                    logger.info("插件（{}）发布出错", saasFeature, result.cause());
+                    logger.info("插件（{}）发布出错", saasFeature, deployed.cause());
                 }
             });
-        });
+        }
     }
 
     @Override

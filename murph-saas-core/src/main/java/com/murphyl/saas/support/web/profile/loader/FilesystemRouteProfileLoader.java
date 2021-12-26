@@ -1,8 +1,8 @@
-package com.murphyl.saas.support.web.schema.loader.impl;
+package com.murphyl.saas.support.web.profile.loader;
 
 import com.murphyl.saas.support.expression.graaljs.JavaScriptSupport;
-import com.murphyl.saas.support.web.schema.RestRoute;
-import com.murphyl.saas.support.web.schema.manager.RestProfileLoader;
+import com.murphyl.saas.support.web.profile.RestRoute;
+import com.murphyl.saas.support.web.profile.manager.RouteProfileLoader;
 import com.murphyl.saas.utils.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.graalvm.polyglot.Value;
@@ -20,7 +20,7 @@ import java.util.*;
  * @date: 2021/12/24 15:37
  * @author: murph
  */
-public class FilesystemRouteProfileLoader implements RestProfileLoader {
+public class FilesystemRouteProfileLoader implements RouteProfileLoader {
 
     private static final Logger logger = LoggerFactory.getLogger(FilesystemRouteProfileLoader.class);
 

@@ -1,15 +1,16 @@
 package com.murphyl.saas.core;
 
 import com.google.inject.AbstractModule;
+import com.google.inject.Scopes;
+import com.murphyl.saas.support.web.profile.RouteProfile;
+import com.murphyl.saas.support.web.profile.loader.FilesystemRouteProfileLoader;
+import com.murphyl.saas.support.web.profile.loader.JdbcRouteProfileLoader;
+import com.murphyl.saas.support.web.profile.manager.RouteProfileLoader;
 import com.typesafe.config.Config;
+import com.typesafe.config.ConfigBeanFactory;
 import com.typesafe.config.ConfigFactory;
-import com.typesafe.config.ConfigObject;
-import com.typesafe.config.ConfigValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.inject.Singleton;
-import java.util.Map;
 
 /**
  * IoC - 上下文怕配置
@@ -21,27 +22,29 @@ public class SaasContextModule extends AbstractModule {
 
     private static final Logger logger = LoggerFactory.getLogger(SaasContextModule.class);
 
-    private static final String DATASOURCE_CONFIG_KEY = "datasource";
-
     @Override
     protected void configure() {
-        Config config = ConfigFactory.load();
-        // 绑定上下文配置
-        this.bind(Config.class).toProvider(() -> config).in(Singleton.class);
-        // 初始化数据源
-        if (config.hasPath(DATASOURCE_CONFIG_KEY)) {
-            provideDataSources(config.getObject(DATASOURCE_CONFIG_KEY));
-        }
+        // 配置
+        Config configModule = ConfigFactory.load();
+        bind(Config.class).toProvider(() -> configModule).in(Scopes.SINGLETON);
+        // 路由规则加载器
+        RouteProfileLoader routeProfileLoader = buildRestProfileLoader(configModule.getConfig("rest.profile"));
+        bind(RouteProfileLoader.class).toProvider(() -> routeProfileLoader).in(Scopes.SINGLETON);
+
+        // TODO datasource
+
     }
 
-    /**
-     * 初始化数据源模块
-     *
-     * @param dataSources
-     */
-    public void provideDataSources(ConfigObject dataSources) {
-        for (Map.Entry<String, ConfigValue> entry : dataSources.entrySet()) {
-            logger.info("TODO - 正在初始化数据源：{}", entry.getKey());
+    private RouteProfileLoader buildRestProfileLoader(Config options) {
+        logger.info("正在构造路由规则加载器：{}", options.withoutPath("options.routes"));
+        RouteProfile profile = ConfigBeanFactory.create(options, RouteProfile.class);
+        switch (profile.getLoader()) {
+            case "filesystem":
+                return new FilesystemRouteProfileLoader(profile.getOptions());
+            case "jdbc":
+                return new JdbcRouteProfileLoader(profile.getOptions());
+            default:
+                throw new IllegalStateException("无法构造指定类型的路由规则加载器：" + options);
         }
     }
 

@@ -1,8 +1,5 @@
 # Rest 服务
-com.murphyl.saas.features.WebFacadeFeature
-
-# 数据源
-com.murphyl.saas.features.DataSourceFeature
+com.murphyl.saas.features.WebServerManagerFeature
 
 # 表达式
-com.murphyl.saas.features.ExpressionFeature
+com.murphyl.saas.features.ExpressionManagerFeature

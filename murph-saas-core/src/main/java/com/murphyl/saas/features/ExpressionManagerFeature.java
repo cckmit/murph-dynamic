@@ -9,26 +9,27 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 
 /**
- * 数据源 - 构造门面
+ * 表达式、模板 - 特征
  *
  * @author: murph
- * @date: 2021/12/26 - 0:33
+ * @date: 2021/12/26 - 0:37
  */
-public class DataSourceFeature implements SaasFeature<Vertx> {
+public class ExpressionManagerFeature implements SaasFeature<Vertx> {
 
-    private static final Logger logger = LoggerFactory.getLogger(WebFacadeFeature.class);
+    private static final Logger logger = LoggerFactory.getLogger(ExpressionManagerFeature.class);
 
     @Inject
-    public DataSourceFeature() {
-    }
+    private Config env;
 
     @Override
     public String name() {
-        return "datasource";
+        return "expression";
     }
 
     @Override
     public void init(Vertx instance) {
+        logger.info("表达式管理器：{}", env.getObject(name()));
 
     }
+
 }

@@ -1,4 +1,6 @@
-package com.murphyl.saas.support.web.schema;
+package com.murphyl.saas.support.web.profile;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * Rest - 请求
@@ -18,6 +20,7 @@ public class RestRoute<T> {
 
     private String path;
 
+    @JsonIgnore
     private T function;
 
     public String getNamespace() {

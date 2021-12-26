@@ -1,4 +1,4 @@
-package com.murphyl.saas.support.web.schema.manager;
+package com.murphyl.saas.support.web.profile.manager;
 
 import com.murphyl.dynamic.NamedFeature;
 
@@ -10,14 +10,14 @@ import java.util.List;
  * @date: 2021/12/24 15:35
  * @author: murph
  */
-public interface RestProfileLoader extends NamedFeature {
+public interface RouteProfileLoader extends NamedFeature {
 
     /**
      * 构造实例
      *
      * @return
      */
-    static RestProfileLoader getInstance(String name) {
+    static RouteProfileLoader getInstance(String name) {
         if (null == name || name.trim().length() == 0) {
             throw new IllegalStateException("加载 Rest 模块的配置出错");
         }
