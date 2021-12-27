@@ -6,4 +6,4 @@ java --add-opens java.base/java.lang=ALL-UNNAMED
 ### TODO
 
 - [ ] UdfSourceAssembly
-- [ ] 脚本化 HTTP 请求
+- [ ] 脚本化 HTTP 请求 - [Apache Commons JEXL - Syntax](https://commons.apache.org/proper/commons-jexl/reference/syntax.html)
