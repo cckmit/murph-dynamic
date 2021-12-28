@@ -7,12 +7,12 @@ import io.vertx.core.Verticle;
 import io.vertx.core.Vertx;
 
 /**
- * -
+ * Vercle - 包装
  *
  * @author: murph
  * @date: 2021/12/26 - 1:45
  */
-public class SaasVerticle implements Verticle {
+public class VerticleProxy implements Verticle {
 
     protected Vertx vertx;
 
@@ -20,7 +20,7 @@ public class SaasVerticle implements Verticle {
 
     private SaasFeature feature;
 
-    public SaasVerticle(SaasFeature feature) {
+    public VerticleProxy(SaasFeature feature) {
         this.feature = feature;
     }
 

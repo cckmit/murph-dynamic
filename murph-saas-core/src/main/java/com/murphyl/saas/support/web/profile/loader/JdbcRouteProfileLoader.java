@@ -18,6 +18,11 @@ public class JdbcRouteProfileLoader implements RouteProfileLoader {
     }
 
     @Override
+    public String name() {
+        return "jdbc";
+    }
+
+    @Override
     public List<RestRoute> load() {
         return null;
     }

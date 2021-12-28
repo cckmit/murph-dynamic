@@ -4,7 +4,7 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.murphyl.saas.core.SaasContextModule;
 import com.murphyl.saas.core.SaasFeature;
-import com.murphyl.saas.support.SaasVerticle;
+import com.murphyl.saas.support.VerticleProxy;
 import com.typesafe.config.Config;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
@@ -15,7 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
-import java.util.ServiceLoader;
 
 /**
  * 入口
@@ -47,7 +46,7 @@ public class SaasApplication extends AbstractVerticle {
         Validate.notEmpty(features, "无法通过 SPI 加载动态模块：" + SaasFeature.class.getCanonicalName());
         for (SaasFeature saasFeature : ServiceHelper.loadFactories(SaasFeature.class)) {
             injector.injectMembers(saasFeature);
-            vertx.deployVerticle(new SaasVerticle(saasFeature), options, deployed -> {
+            vertx.deployVerticle(new VerticleProxy(saasFeature), options, deployed -> {
                 if (deployed.succeeded()) {
                     logger.info("插件（{}）发布完成！", saasFeature);
                 } else {

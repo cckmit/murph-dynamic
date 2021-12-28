@@ -13,28 +13,6 @@ import java.util.List;
 public interface RouteProfileLoader extends NamedFeature {
 
     /**
-     * 构造实例
-     *
-     * @return
-     */
-    static RouteProfileLoader getInstance(String name) {
-        if (null == name || name.trim().length() == 0) {
-            throw new IllegalStateException("加载 Rest 模块的配置出错");
-        }
-        try {
-            Class.forName(name);
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-        throw new IllegalStateException("Rest 模块配置加载器初始化失败，暂不支持的加载器类型：" + name);
-    }
-
-    @Override
-    default String name() {
-        return "rest";
-    }
-
-    /**
      * 生成 namespace
      *
      * @param type
