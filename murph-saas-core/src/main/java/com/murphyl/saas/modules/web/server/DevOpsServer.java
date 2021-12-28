@@ -1,8 +1,6 @@
 package com.murphyl.saas.modules.web.server;
 
 import com.murphyl.saas.modules.web.router.devops.DynamicUserRouterManager;
-import com.murphyl.saas.support.expression.graaljs.proxy.LoggerProxy;
-import com.murphyl.saas.support.expression.graaljs.proxy.RestProxy;
 import com.murphyl.saas.support.web.profile.RestRoute;
 import com.murphyl.saas.support.web.profile.manager.RouteProfileLoader;
 import com.murphyl.saas.support.web.server.WebServerHelper;
@@ -17,13 +15,11 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
-import io.vertx.ext.web.RoutingContext;
 import org.graalvm.polyglot.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -77,13 +73,16 @@ public class DevOpsServer extends AbstractVerticle {
 
     private Router buildRouter() {
         Router router = Router.router(vertx);
-        router.route("/routes")
-                .method(HttpMethod.GET).handler((ctx) -> {
-                    ctx.json(routesTable.values());
-                })
-                .method(HttpMethod.POST).handler(ctx -> {
-                    ctx.end("ADDED");
-                });
+        router.route().failureHandler(ctx -> {
+            logger.info("执行脚本请求出错", ctx.failure());
+        });
+        router.route(HttpMethod.GET, "/").handler(ctx -> ctx.end("dash"));
+        router.route(HttpMethod.GET, "/routes").handler((ctx) -> {
+            ctx.json(routesTable.values());
+        });
+        router.route(HttpMethod.POST, "/routes").handler(ctx -> {
+            ctx.end("ADDED");
+        });
         Map<String, RestRoute> previewTable = new ConcurrentHashMap<>();
         router.route(HttpMethod.GET, "/routes/hot").handler(ctx -> {
             logger.info("正在重新加载路由配置……");
@@ -129,11 +128,6 @@ public class DevOpsServer extends AbstractVerticle {
             });
         }
         router.mountSubRouter("/preview", previewRouter);
-        router.route()
-                .failureHandler(ctx -> {
-                    logger.info("执行脚本请求出错", ctx.failure());
-                });
-        router.route(HttpMethod.GET, "/").handler(ctx -> ctx.end("dash"));
         return router;
     }
 
