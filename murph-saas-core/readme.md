@@ -3,5 +3,8 @@
 java --add-opens java.base/java.lang=ALL-UNNAMED
 ```
 
-### 脚本化 HTTP 请求
+### TODO
 
+- [ ] UdfSourceAssembly
+- [ ] 脚本化 HTTP 请求 - [Apache Commons JEXL - Syntax](https://commons.apache.org/proper/commons-jexl/reference/syntax.html)
+- [ ] [配置文件](https://github.com/lightbend/config/blob/main/HOCON.md)
