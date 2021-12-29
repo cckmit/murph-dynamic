@@ -1,8 +1,6 @@
 package com.murphyl.saas.modules.web.server;
 
 import com.murphyl.saas.modules.web.router.devops.DynamicFrontRouterManager;
-import com.murphyl.saas.support.expression.graaljs.proxy.LoggerProxy;
-import com.murphyl.saas.support.expression.graaljs.proxy.RestProxy;
 import com.murphyl.saas.support.web.profile.RestRoute;
 import com.murphyl.saas.support.web.server.WebServerOptions;
 import com.typesafe.config.Config;
@@ -12,20 +10,17 @@ import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
+import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.net.SocketAddress;
-import io.vertx.core.net.impl.SocketAddressImpl;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
+import org.apache.commons.lang3.StringUtils;
 import org.graalvm.polyglot.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-import java.net.InetSocketAddress;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * DevOps 服务
@@ -42,29 +37,31 @@ public class DevOpsWebServer extends AbstractVerticle {
     @Inject
     private DynamicFrontRouterManager dynamicRouterManager;
 
-    private WebServerOptions options;
+    @Inject
+    private Config configModule;
+
 
     private HttpServer httpServer;
-
-    @Inject
-    public DevOpsWebServer(Config env) {
-        this.options = ConfigBeanFactory.create(env.getConfig("devops"), WebServerOptions.class);
-    }
 
     @Override
     public void start(Promise<Void> startPromise) throws Exception {
         super.start(startPromise);
-        httpServer = vertx.createHttpServer();
-        SocketAddress address = createAddress(options);
-        httpServer.requestHandler(buildRouter()).listen(address, event -> {
+        WebServerOptions options = ConfigBeanFactory.create(configModule.getConfig("devops"), WebServerOptions.class);
+        HttpServerOptions severOptions = new HttpServerOptions().setLogActivity(true).setPort(options.getPort());
+        if (StringUtils.isEmpty(options.getHost())) {
+            logger.warn("可以通过（）配置项设置 DevOps Web 服务器的 hostname");
+        } else {
+            severOptions.setHost(options.getHost());
+        }
+        httpServer = vertx.createHttpServer(severOptions);
+        httpServer.requestHandler(buildRouter()).listen(event -> {
             if (event.succeeded()) {
-                logger.info("DevOps HTTP 服务模块发布完成：{}", address);
+                logger.info("DevOps HTTP server deploy success: {}", severOptions.toJson());
             } else {
-                logger.error("DevOps HTTP 服务发布失败", event.cause());
+                logger.error("DevOps HTTP server deploy failure", event.cause());
             }
         });
     }
-
 
     private Router buildRouter() {
         Router router = Router.router(vertx);
@@ -87,22 +84,6 @@ public class DevOpsWebServer extends AbstractVerticle {
         });
         router.mountSubRouter("/preview", previewRouter);
         return router;
-    }
-
-    public static SocketAddress createAddress(WebServerOptions options) {
-        if (null == options.getHost()) {
-            logger.warn("可以通过（{}）设置服务发布的域名", SERVER_HOST_KEY);
-            return new SocketAddressImpl(new InetSocketAddress(options.getPort()));
-        } else {
-            return new SocketAddressImpl(options.getPort(), options.getHost());
-        }
-    }
-
-    public static Map<String, Object> createArguments(Logger logger, RoutingContext context) {
-        Map<String, Object> result = new HashMap<>(2);
-        result.put("logger", new LoggerProxy(logger));
-        result.put("rest", new RestProxy(context));
-        return result;
     }
 
     private Handler<RoutingContext> listFrontRoutes = (ctx) -> {

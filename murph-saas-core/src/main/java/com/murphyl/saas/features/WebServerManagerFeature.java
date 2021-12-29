@@ -33,20 +33,20 @@ public class WebServerManagerFeature implements SaasFeature<Vertx> {
 
     @Override
     public void init(Vertx vertx) {
-        logger.info("正在启动 Rest 模块……");
-        DeploymentOptions options = new DeploymentOptions().setWorker(true).setWorkerPoolName("http-router");
+        logger.info("Starting rest module……");
+        DeploymentOptions options = new DeploymentOptions().setWorker(true).setWorkerPoolName("http-server");
         vertx.deployVerticle(publicRestFacade, options, deployed -> {
             if (deployed.succeeded()) {
-                logger.info("开放 Rest 服务模块发布完成：{}", deployed.result());
+                logger.info("Public rest HTTP server deploy success: {}", deployed.result());
             } else {
-                logger.error("开放 Rest 服务模块发布失败", deployed.cause());
+                logger.error("Public rest HTTP server deploy failure", deployed.cause());
             }
         });
         vertx.deployVerticle(devOpsRestFacade, options, deployed -> {
             if (deployed.succeeded()) {
-                logger.info("DevOps 服务模块发布完成：{}", deployed.result());
+                logger.info("DevOps HTTP server deploy success: {}", deployed.result());
             } else {
-                logger.error("DevOps 服务模块发布失败", deployed.cause());
+                logger.error("DevOps HTTP server deploy failure", deployed.cause());
             }
         });
     }

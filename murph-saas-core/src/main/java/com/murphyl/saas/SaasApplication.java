@@ -6,10 +6,7 @@ import com.murphyl.saas.core.SaasContextModule;
 import com.murphyl.saas.core.SaasFeature;
 import com.murphyl.saas.support.VerticleProxy;
 import com.typesafe.config.Config;
-import io.vertx.core.AbstractVerticle;
-import io.vertx.core.DeploymentOptions;
-import io.vertx.core.Promise;
-import io.vertx.core.ServiceHelper;
+import io.vertx.core.*;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,19 +35,19 @@ public class SaasApplication extends AbstractVerticle {
         Config env = injector.getInstance(Config.class);
         // 初始化动态特征执行环境
         int workerPoolSize = env.getInt("app.pool.size");
-        logger.info("应用核心线程池容量：{}", workerPoolSize);
+        logger.info("Vert.x core poll size：{}", workerPoolSize);
         DeploymentOptions options = new DeploymentOptions()
                 .setWorker(true).setWorkerPoolName("saas-feature").setWorkerPoolSize(workerPoolSize);
         // 发布通过 SPI 加载的动态模块
         Collection<SaasFeature> features = ServiceHelper.loadFactories(SaasFeature.class);
-        Validate.notEmpty(features, "无法通过 SPI 加载动态模块：" + SaasFeature.class.getCanonicalName());
+        Validate.notEmpty(features, "Can not load dynamic modules via SPI: " + SaasFeature.class.getCanonicalName());
         for (SaasFeature saasFeature : ServiceHelper.loadFactories(SaasFeature.class)) {
             injector.injectMembers(saasFeature);
             vertx.deployVerticle(new VerticleProxy(saasFeature), options, deployed -> {
                 if (deployed.succeeded()) {
-                    logger.info("插件（{}）发布完成！", saasFeature);
+                    logger.info("Dynamic module（{}）deploy success！", saasFeature);
                 } else {
-                    logger.info("插件（{}）发布出错", saasFeature, deployed.cause());
+                    logger.info("Dynamic module（{}）deploy failure", saasFeature, deployed.cause());
                 }
             });
         }
@@ -59,6 +56,6 @@ public class SaasApplication extends AbstractVerticle {
     @Override
     public void stop(Promise<Void> stopPromise) throws Exception {
         super.stop(stopPromise);
-        logger.info("应用退出执行！");
+        logger.info("Application exited！");
     }
 }
