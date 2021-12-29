@@ -70,7 +70,7 @@ public class FilesystemRouteProfileLoader implements RouteProfileLoader {
                     logger.warn("脚本文件（{}）导出的对象（{}）无法被执行", filename, module);
                     continue;
                 }
-                logger.info("正在注册路由规则：file=[{}], endpoint=[{}], binding=[{}]", filename, module, rule.getValue());
+                logger.info("Loading route rule: file=[{}], endpoint=[{}], binding=[{}]", filename, module, rule.getValue());
                 result.add(convert(filename, script, module, rule.getValue(), exports.getMember(module)));
             }
         }

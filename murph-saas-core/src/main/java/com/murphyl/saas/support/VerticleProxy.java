@@ -14,9 +14,9 @@ import io.vertx.core.Vertx;
  */
 public class VerticleProxy implements Verticle {
 
-    protected Vertx vertx;
+    private Vertx vertx;
 
-    protected Context context;
+    private Context context;
 
     private SaasFeature feature;
 

@@ -14,7 +14,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.util.Objects;
 
 /**
  * IoC - 上下文怕配置 - https://www.baeldung.com/guice

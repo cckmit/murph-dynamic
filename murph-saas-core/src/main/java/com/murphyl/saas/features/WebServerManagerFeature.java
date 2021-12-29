@@ -5,6 +5,7 @@ import com.murphyl.saas.modules.web.server.DevOpsWebServer;
 import com.murphyl.saas.modules.web.server.FrontEndWebServer;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,6 +21,8 @@ public class WebServerManagerFeature implements SaasFeature<Vertx> {
 
     private static final Logger logger = LoggerFactory.getLogger(WebServerManagerFeature.class);
 
+    public static final String EVENT_KEY = "web-server-event";
+
     @Inject
     private FrontEndWebServer publicRestFacade;
 
@@ -34,21 +37,56 @@ public class WebServerManagerFeature implements SaasFeature<Vertx> {
     @Override
     public void init(Vertx vertx) {
         logger.info("Starting rest module……");
-        DeploymentOptions options = new DeploymentOptions().setWorker(true).setWorkerPoolName("http-server");
-        vertx.deployVerticle(publicRestFacade, options, deployed -> {
+        this.deployFrontUserServer(vertx);
+        this.deployDevOpsServer(vertx);
+        this.bindDevOpsEvents(vertx);
+    }
+
+    private void deployFrontUserServer(Vertx vertx) {
+        DeploymentOptions devopsOptions = new DeploymentOptions().setWorker(true).setWorkerPoolName("public-http-server");
+        vertx.deployVerticle(publicRestFacade, devopsOptions, deployed -> {
             if (deployed.succeeded()) {
-                logger.info("Public rest HTTP server deploy success: {}", deployed.result());
+                logger.info("Public HTTP server deploy success: {}", deployed.result());
             } else {
-                logger.error("Public rest HTTP server deploy failure", deployed.cause());
+                logger.error("Public HTTP server deploy failure", deployed.cause());
             }
         });
-        vertx.deployVerticle(devOpsRestFacade, options, deployed -> {
+    }
+
+    private void deployDevOpsServer(Vertx vertx) {
+        DeploymentOptions devopsOptions = new DeploymentOptions().setWorker(true).setWorkerPoolName("devops-http-server");
+        vertx.deployVerticle(devOpsRestFacade, devopsOptions, deployed -> {
             if (deployed.succeeded()) {
                 logger.info("DevOps HTTP server deploy success: {}", deployed.result());
             } else {
                 logger.error("DevOps HTTP server deploy failure", deployed.cause());
             }
         });
+    }
+
+    private void bindDevOpsEvents(Vertx vertx) {
+        vertx.eventBus().consumer(EVENT_KEY, (Message<String> event) -> {
+            switch (event.body()) {
+                case Events.DEPLOY:
+                    vertx.undeploy(publicRestFacade.deploymentID(), undeploy -> {
+                        if (undeploy.succeeded()) {
+                            logger.info("重新发布前端用户开放 Web 服务器");
+                            deployDevOpsServer(vertx);
+                        } else {
+                            logger.error("重新发布路由规则失败，卸载路由规则出错", undeploy.cause());
+                        }
+                    });
+                    break;
+                default:
+                    logger.warn("暂不支持的路由规则");
+            }
+        });
+    }
+
+    public class Events {
+
+        public static final String DEPLOY = "reload-front-user-routes";
+
     }
 
 }

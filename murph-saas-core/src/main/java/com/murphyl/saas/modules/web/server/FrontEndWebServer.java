@@ -4,7 +4,6 @@ import com.murphyl.saas.modules.web.router.devops.DynamicFrontRouterManager;
 import com.murphyl.saas.support.expression.graaljs.proxy.LoggerProxy;
 import com.murphyl.saas.support.expression.graaljs.proxy.RestProxy;
 import com.murphyl.saas.support.web.profile.RestRoute;
-import com.murphyl.saas.support.web.profile.manager.RouteProfileLoader;
 import com.murphyl.saas.support.web.server.WebServerOptions;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigBeanFactory;
@@ -12,17 +11,16 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
-import io.vertx.core.net.SocketAddress;
-import io.vertx.core.net.impl.SocketAddressImpl;
-import io.vertx.ext.web.Route;
+import io.vertx.core.http.HttpServerOptions;
+import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
-import io.vertx.ext.web.RoutingContext;
+import org.apache.commons.lang3.StringUtils;
 import org.graalvm.polyglot.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,36 +38,32 @@ public class FrontEndWebServer extends AbstractVerticle {
 
     private static final String SERVER_HOST_KEY = "server.host";
 
+    public static final String DYNAMIC_ROOT = "/dynamic";
+
     @Inject
     private DynamicFrontRouterManager dynamicUserRouterManager;
 
-    @Inject
-    private RouteProfileLoader routeProfileLoader;
-
     private WebServerOptions options;
 
-    private HttpServer httpServer;
-
-    private Map<String, RestRoute<Value>> routesTable;
+    private final Map<String, Value> routeTable = new ConcurrentHashMap<>();
 
     @Inject
     public FrontEndWebServer(Config env) {
         this.options = ConfigBeanFactory.create(env.getConfig("rest"), WebServerOptions.class);
+
     }
 
     @Override
     public void start(Promise<Void> startPromise) throws Exception {
         super.start(startPromise);
-        List<RestRoute> routes = routeProfileLoader.load();
-        routesTable = new ConcurrentHashMap<>();
-        for (RestRoute<Value> route : routes) {
-            routesTable.put(route.getNamespace(), route);
-        }
-        httpServer = vertx.createHttpServer();
-        SocketAddress address = createAddress(options);
-        httpServer.requestHandler(buildRouter()).listen(address, event -> {
+        HttpServerOptions severOptions = new HttpServerOptions().setLogActivity(true).setPort(options.getPort());
+        this.reloadRouteTable();
+        HttpServer httpServer = vertx.createHttpServer(severOptions);
+        Router router = Router.router(vertx);
+        this.migrate(router);
+        httpServer.requestHandler(router).listen(event -> {
             if (event.succeeded()) {
-                logger.info("用户开放 HTTP 服务模块发布完成：{}", address);
+                logger.info("用户开放 HTTP 服务模块发布完成：{}", severOptions.toJson());
             } else {
                 logger.error("用户开放 HTTP 服务发布失败", event.cause());
             }
@@ -77,41 +71,45 @@ public class FrontEndWebServer extends AbstractVerticle {
     }
 
 
-    private Router buildRouter() {
-        Router router = Router.router(vertx);
-        router.route(HttpMethod.GET, "/").handler(ctx -> ctx.end("home"));
-        for (RestRoute<Value> rule : routesTable.values()) {
-            Route route = router.route(rule.getPath()).putMetadata("namespace", rule.getNamespace());
-            if (null != rule.getMethod()) {
-                route.method(HttpMethod.valueOf(rule.getMethod()));
+    private void migrate(Router root) {
+        root.route(HttpMethod.GET, "/").handler(ctx -> ctx.end("home"));
+        LoggerProxy loggerProxy = new LoggerProxy(LoggerFactory.getLogger("dynamic-function"));
+        root.route(DYNAMIC_ROOT).path("/*").handler(ctx -> {
+            // 处理请求路径
+            String path = StringUtils.removeStart(ctx.request().path(), DYNAMIC_ROOT);
+            // 请求的规则不存在
+            if (null == routeTable.get(path)) {
+                ctx.fail(404);
+                return;
             }
-            route.handler(ctx -> {
-                Logger logger = LoggerFactory.getLogger(rule.getNamespace());
-                RestRoute<Value> current = routesTable.get(ctx.currentRoute().getMetadata("namespace"));
-                if (null == current) {
-                    ctx.end("no dynamic function");
-                } else {
-                    current.getFunction().executeVoid(createArguments(logger, ctx));
-                }
-            });
-        }
-        return router;
+            // 标记请求
+            HttpServerResponse response = ctx.response();
+            response.putHeader("x-function-route", path);
+            // 处理请求
+            Map<String, Object> arguments = new HashMap<>(2);
+            arguments.put("logger", loggerProxy);
+            arguments.put("rest", new RestProxy(ctx));
+            routeTable.get(path).executeVoid(arguments);
+        }).failureHandler(failure -> {
+            logger.error("请求处理错误", failure.failure());
+            HttpServerResponse response = failure.response();
+            response.setStatusCode(failure.statusCode());
+            response.putHeader("x-function-error", failure.response().getStatusMessage());
+            failure.json(new JsonObject().put("code", 1).put("message", "动态请求执行错误"));
+        });
     }
 
-    public static SocketAddress createAddress(WebServerOptions options) {
-        if (null == options.getHost()) {
-            logger.warn("可以通过（{}）设置服务发布的域名", SERVER_HOST_KEY);
-            return new SocketAddressImpl(new InetSocketAddress(options.getPort()));
-        } else {
-            return new SocketAddressImpl(options.getPort(), options.getHost());
+    private synchronized void reloadRouteTable() {
+        List<RestRoute<Value>> routes = dynamicUserRouterManager.getLoadedRoutes();
+        // 构造临时路由表
+        Map<String, Value> tempRouteTable = new HashMap<>(routes.size());
+        for (RestRoute<Value> route : routes) {
+            tempRouteTable.put(route.getPath(), route.getFunction());
         }
-    }
-
-    public static Map<String, Object> createArguments(Logger logger, RoutingContext context) {
-        Map<String, Object> result = new HashMap<>(2);
-        result.put("logger", new LoggerProxy(logger));
-        result.put("rest", new RestProxy(context));
-        return result;
+        // 清理路由表
+        this.routeTable.clear();
+        // 重载路由表
+        this.routeTable.putAll(tempRouteTable);
     }
 
 }

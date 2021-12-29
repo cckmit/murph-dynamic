@@ -19,6 +19,11 @@ public class RestProxy {
     }
 
     @HostAccess.Export
+    public String path() {
+        return context.request().path();
+    }
+
+    @HostAccess.Export
     public void sendJSON(Object value) {
         context.json(value);
     }
