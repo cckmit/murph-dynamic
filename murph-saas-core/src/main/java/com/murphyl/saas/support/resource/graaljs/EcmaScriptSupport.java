@@ -1,4 +1,4 @@
-package com.murphyl.saas.support.expression.graaljs;
+package com.murphyl.saas.support.resource.graaljs;
 
 import com.oracle.truffle.js.lang.JavaScriptLanguage;
 import com.typesafe.config.Config;
@@ -23,9 +23,9 @@ import java.util.Set;
  * @date: 2021/12/23 17:20
  * @author: murph
  */
-public final class JavaScriptSupport {
+public final class EcmaScriptSupport {
 
-    private static final Logger logger = LoggerFactory.getLogger(JavaScriptSupport.class);
+    private static final Logger logger = LoggerFactory.getLogger(EcmaScriptSupport.class);
 
     private static final Context.Builder CONTEXT_BUILDER;
 

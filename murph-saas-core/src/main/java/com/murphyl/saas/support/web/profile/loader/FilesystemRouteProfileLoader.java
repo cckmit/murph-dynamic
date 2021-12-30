@@ -1,6 +1,6 @@
 package com.murphyl.saas.support.web.profile.loader;
 
-import com.murphyl.saas.support.expression.graaljs.JavaScriptSupport;
+import com.murphyl.saas.support.resource.graaljs.EcmaScriptSupport;
 import com.murphyl.saas.support.web.profile.RestRoute;
 import com.murphyl.saas.support.web.profile.manager.RouteProfileLoader;
 import com.murphyl.saas.utils.FileUtils;
@@ -55,7 +55,7 @@ public class FilesystemRouteProfileLoader implements RouteProfileLoader {
         for (Map.Entry<String, Map<String, String>> route : routes.entrySet()) {
             String filename = route.getKey();
             File script = scripts.get(Path.of(filename).normalize().toString());
-            Value exports = JavaScriptSupport.eval(FileUtils.read(script));
+            Value exports = EcmaScriptSupport.eval(FileUtils.read(script));
             Map<String, String> table = route.getValue();
             if (null == table) {
                 throw new IllegalStateException("Rest 模块[" + filename + "]路由表配置不能为空");

@@ -1,4 +1,4 @@
-package com.murphyl.saas.support.expression.graaljs.proxy;
+package com.murphyl.saas.support.resource.graaljs.proxy;
 
 import org.graalvm.polyglot.HostAccess;
 import org.slf4j.Logger;

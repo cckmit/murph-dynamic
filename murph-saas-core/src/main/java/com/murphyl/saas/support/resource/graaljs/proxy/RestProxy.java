@@ -1,4 +1,4 @@
-package com.murphyl.saas.support.expression.graaljs.proxy;
+package com.murphyl.saas.support.resource.graaljs.proxy;
 
 import io.vertx.ext.web.RoutingContext;
 import org.graalvm.polyglot.HostAccess;

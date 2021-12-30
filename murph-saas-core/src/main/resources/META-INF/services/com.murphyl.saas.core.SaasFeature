@@ -1,8 +1,8 @@
 # Rest 服务
 com.murphyl.saas.features.WebServerManagerFeature
 
-# 脚本
-com.murphyl.saas.features.ScriptManagerFeature
+# 脚本&模板
+com.murphyl.saas.features.ResourceManagerFeature
 
-# 模板
-com.murphyl.saas.features.TemplateManagerFeature
+# 管线
+com.murphyl.saas.features.PipelineManagerFeature

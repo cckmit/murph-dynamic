@@ -1,6 +1,7 @@
 package com.murphyl.saas.support.web.profile.manager;
 
 import com.murphyl.dynamic.NamedFeature;
+import com.murphyl.saas.support.ProfileLoader;
 
 import java.util.List;
 
@@ -10,7 +11,7 @@ import java.util.List;
  * @date: 2021/12/24 15:35
  * @author: murph
  */
-public interface RouteProfileLoader extends NamedFeature {
+public interface RouteProfileLoader extends NamedFeature, ProfileLoader {
 
     /**
      * 生成 namespace
@@ -23,13 +24,5 @@ public interface RouteProfileLoader extends NamedFeature {
     default String namespace(String type, String unique, String endpoint) {
         return String.format("%s://%s?%s", type, unique, endpoint);
     }
-
-    /**
-     * 加载配置
-     *
-     * @return
-     * @throws Exception
-     */
-    <T> List<T> load();
 
 }

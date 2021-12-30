@@ -31,7 +31,7 @@ public class WebServerManagerFeature implements SaasFeature<Vertx> {
 
     @Override
     public void init(Vertx vertx) {
-        logger.info("Starting rest module……");
+        logger.info("Starting web server……");
         this.deployFrontUserServer(vertx);
         this.deployDevOpsServer(vertx);
         this.bindDevOpsEvents(vertx);

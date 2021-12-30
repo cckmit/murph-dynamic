@@ -1,8 +1,8 @@
 package com.murphyl.saas.modules.web.server;
 
 import com.murphyl.saas.modules.web.router.devops.DynamicFrontRouterManager;
-import com.murphyl.saas.support.expression.graaljs.proxy.LoggerProxy;
-import com.murphyl.saas.support.expression.graaljs.proxy.RestProxy;
+import com.murphyl.saas.support.resource.graaljs.proxy.LoggerProxy;
+import com.murphyl.saas.support.resource.graaljs.proxy.RestProxy;
 import com.murphyl.saas.support.web.profile.RestRoute;
 import com.murphyl.saas.support.web.server.WebServerOptions;
 import com.typesafe.config.Config;

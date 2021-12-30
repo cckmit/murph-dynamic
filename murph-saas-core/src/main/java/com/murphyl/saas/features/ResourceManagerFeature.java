@@ -14,17 +14,16 @@ import javax.inject.Inject;
  * @author: murph
  * @date: 2021/12/26 - 0:37
  */
-public class TemplateManagerFeature implements SaasFeature<Vertx> {
+public class ResourceManagerFeature implements SaasFeature<Vertx> {
 
-    private static final Logger logger = LoggerFactory.getLogger(TemplateManagerFeature.class);
+    private static final Logger logger = LoggerFactory.getLogger(ResourceManagerFeature.class);
 
     @Inject
     private Config env;
 
     @Override
     public void init(Vertx instance) {
-        logger.info("模板管理器");
-
+        logger.info("Starting resource manager……");
     }
 
 }
