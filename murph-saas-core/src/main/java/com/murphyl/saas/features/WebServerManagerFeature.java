@@ -30,11 +30,6 @@ public class WebServerManagerFeature implements SaasFeature<Vertx> {
     private DevOpsWebServer devOpsRestFacade;
 
     @Override
-    public String name() {
-        return "rest";
-    }
-
-    @Override
     public void init(Vertx vertx) {
         logger.info("Starting rest module……");
         this.deployFrontUserServer(vertx);

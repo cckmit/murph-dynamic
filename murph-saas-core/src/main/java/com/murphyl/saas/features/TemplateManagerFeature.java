@@ -14,16 +14,16 @@ import javax.inject.Inject;
  * @author: murph
  * @date: 2021/12/26 - 0:37
  */
-public class ScriptManagerFeature implements SaasFeature<Vertx> {
+public class TemplateManagerFeature implements SaasFeature<Vertx> {
 
-    private static final Logger logger = LoggerFactory.getLogger(ScriptManagerFeature.class);
+    private static final Logger logger = LoggerFactory.getLogger(TemplateManagerFeature.class);
 
     @Inject
     private Config env;
 
     @Override
     public void init(Vertx instance) {
-        logger.info("脚本管理器");
+        logger.info("模板管理器");
 
     }
 

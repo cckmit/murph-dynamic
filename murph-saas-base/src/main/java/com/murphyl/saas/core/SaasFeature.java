@@ -8,7 +8,7 @@ import com.murphyl.dynamic.NamedFeature;
  * @author: murph
  * @date: 2021/12/22 - 23:56
  */
-public interface SaasFeature<T> extends NamedFeature {
+public interface SaasFeature<T> {
 
     /**
      * 依赖项
