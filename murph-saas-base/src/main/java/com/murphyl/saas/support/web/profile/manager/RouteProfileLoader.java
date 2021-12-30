@@ -1,9 +1,7 @@
 package com.murphyl.saas.support.web.profile.manager;
 
 import com.murphyl.dynamic.NamedFeature;
-import com.murphyl.saas.support.ProfileLoader;
-
-import java.util.List;
+import com.murphyl.saas.support.ResourceLoader;
 
 /**
  * Rest - 配置加载器
@@ -11,7 +9,7 @@ import java.util.List;
  * @date: 2021/12/24 15:35
  * @author: murph
  */
-public interface RouteProfileLoader extends NamedFeature, ProfileLoader {
+public interface RouteProfileLoader extends NamedFeature, ResourceLoader {
 
     /**
      * 生成 namespace

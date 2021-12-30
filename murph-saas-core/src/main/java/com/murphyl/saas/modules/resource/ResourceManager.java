@@ -1,7 +1,7 @@
-package com.murphyl.saas.modules;
+package com.murphyl.saas.modules.resource;
 
-import com.murphyl.saas.support.web.profile.loader.FilesystemRouteProfileLoader;
-import com.murphyl.saas.support.web.profile.manager.RouteProfileLoader;
+import com.murphyl.saas.modules.resource.loaders.FilesystemResourceLoader;
+import com.murphyl.saas.support.ResourceLoader;
 import com.murphyl.saas.utils.FileUtils;
 import com.typesafe.config.Config;
 import org.slf4j.Logger;
@@ -46,12 +46,12 @@ public class ResourceManager {
         /**
          * 从文件系统加载资源
          */
-        filesystem(FilesystemRouteProfileLoader.class),
+        filesystem(FilesystemResourceLoader.class),
         ;
 
         private Class loaderClass;
 
-        <T extends RouteProfileLoader> Loaders(Class<T> loaderClass) {
+        <T extends ResourceLoader> Loaders(Class<T> loaderClass) {
             this.loaderClass = loaderClass;
         }
 

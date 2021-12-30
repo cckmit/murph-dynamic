@@ -1,6 +1,6 @@
 package com.murphyl.saas.modules.web.router.devops;
 
-import com.murphyl.saas.modules.ResourceManager;
+import com.murphyl.saas.modules.resource.ResourceManager;
 import com.murphyl.saas.support.web.profile.RestRoute;
 import com.murphyl.saas.support.web.profile.manager.RouteProfileLoader;
 
