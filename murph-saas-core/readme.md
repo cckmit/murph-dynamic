@@ -1,6 +1,6 @@
 ```sh
 # java.lang.reflect.InaccessibleObjectException: Unable to make protected final java.lang.Class java.lang.ClassLoader.defineClass 报错的情况处理
-java --add-opens java.base/java.lang=ALL-UNNAMED
+java --add-opens java.base/java.lang=ALL-UNNAMED -Dconfig.trace=loads -Dconfig.file=$MODULE_DIR$/src/main/resources/test.conf
 ```
 
 ### TODO

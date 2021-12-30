@@ -1,11 +1,15 @@
 package com.murphyl.saas.support.web.profile.loader;
 
 import com.murphyl.saas.support.web.profile.RestRoute;
+import com.murphyl.saas.support.web.profile.RouteProfile;
 import com.murphyl.saas.utils.FileUtils;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigBeanFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -24,7 +28,10 @@ public class FilesystemRouteProfileLoader extends AbstractRouteProfileLoader {
     private final Path root;
     private final Map<String, Map<String, String>> routes;
 
-    public FilesystemRouteProfileLoader(Map<String, Object> options) {
+    @Inject
+    public FilesystemRouteProfileLoader(Config configModule) {
+        RouteProfile profile = ConfigBeanFactory.create(configModule.getConfig("rest.profile"), RouteProfile.class);
+        Map<String, Object> options = profile.getOptions();
         Object path = options.get("path");
         Objects.requireNonNull(path, "从文件系统加载 Rest 配置时必须通过配置项[rest.profile.options.path]指定脚本路径");
         logger.info("从文件系统加载 Rest 配置：{}", path);

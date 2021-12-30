@@ -1,5 +1,7 @@
 package com.murphyl.saas.modules;
 
+import com.murphyl.saas.support.web.profile.loader.FilesystemRouteProfileLoader;
+import com.murphyl.saas.support.web.profile.manager.RouteProfileLoader;
 import com.murphyl.saas.utils.FileUtils;
 import com.typesafe.config.Config;
 import org.slf4j.Logger;
@@ -22,6 +24,10 @@ public class ResourceManager {
 
     private static final Logger logger = LoggerFactory.getLogger(ResourceManager.class);
 
+    public static final String RESOURCE_LOADER_KEY = "app.resource.loader";
+
+    public static final String[] RESOURCE_LOADER_TYPES = {"filesystem"};
+
     private String cwd;
 
     @Inject
@@ -31,8 +37,27 @@ public class ResourceManager {
         logger.info("正在初始化资源管理器，工作目录：{}", config.withoutPath("options"));
     }
 
+
     public Collection<File> getScripts() {
         return FileUtils.list(Paths.get(cwd, "javascript").toFile(), true);
+    }
+
+    public enum Loaders {
+        /**
+         * 从文件系统加载资源
+         */
+        filesystem(FilesystemRouteProfileLoader.class),
+        ;
+
+        private Class loaderClass;
+
+        <T extends RouteProfileLoader> Loaders(Class<T> loaderClass) {
+            this.loaderClass = loaderClass;
+        }
+
+        public Class getLoaderClass() {
+            return loaderClass;
+        }
     }
 
 }
