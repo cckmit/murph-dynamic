@@ -100,11 +100,11 @@ public class FrontEndWebServer extends AbstractVerticle {
     }
 
     private synchronized void reloadRouteTable() {
-        List<RestRoute<Value>> routes = dynamicUserRouterManager.getLoadedRoutes();
+        List<RestRoute> routes = dynamicUserRouterManager.getLoadedRoutes();
         // 构造临时路由表
         Map<String, Value> tempRouteTable = new HashMap<>(routes.size());
-        for (RestRoute<Value> route : routes) {
-            tempRouteTable.put(route.getPath(), route.getFunction());
+        for (RestRoute route : routes) {
+            // tempRouteTable.put(route.getPath(), route.getFunction());
         }
         // 清理路由表
         this.routeTable.clear();

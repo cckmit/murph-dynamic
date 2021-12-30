@@ -8,9 +8,22 @@ package com.murphyl.saas.support.resource;
  */
 public enum ResourceType {
 
+    /**
+     * 脚本
+     */
     SCRIPT,
+    /**
+     * 表达式
+     */
     EXPRESSION,
+    /**
+     * 模板
+     */
     TEMPLATE,
+    /**
+     * 片段
+     */
+    FRAGMENT,
     ;
 
 }

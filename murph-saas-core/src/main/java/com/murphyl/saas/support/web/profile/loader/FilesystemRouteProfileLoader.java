@@ -1,11 +1,8 @@
 package com.murphyl.saas.support.web.profile.loader;
 
-import com.murphyl.saas.support.resource.graaljs.EcmaScriptSupport;
 import com.murphyl.saas.support.web.profile.RestRoute;
-import com.murphyl.saas.support.web.profile.manager.RouteProfileLoader;
 import com.murphyl.saas.utils.FileUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.graalvm.polyglot.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,7 +17,7 @@ import java.util.*;
  * @date: 2021/12/24 15:37
  * @author: murph
  */
-public class FilesystemRouteProfileLoader implements RouteProfileLoader {
+public class FilesystemRouteProfileLoader extends AbstractRouteProfileLoader {
 
     private static final Logger logger = LoggerFactory.getLogger(FilesystemRouteProfileLoader.class);
 
@@ -54,35 +51,25 @@ public class FilesystemRouteProfileLoader implements RouteProfileLoader {
         List<RestRoute> result = new ArrayList<>();
         for (Map.Entry<String, Map<String, String>> route : routes.entrySet()) {
             String filename = route.getKey();
-            File script = scripts.get(Path.of(filename).normalize().toString());
-            Value exports = EcmaScriptSupport.eval(FileUtils.read(script));
+            File location = scripts.get(Path.of(filename).normalize().toString());
             Map<String, String> table = route.getValue();
             if (null == table) {
                 throw new IllegalStateException("Rest 模块[" + filename + "]路由表配置不能为空");
             }
             for (Map.Entry<String, String> rule : table.entrySet()) {
-                String module = rule.getKey();
-                if (!exports.hasMember(module)) {
-                    logger.warn("脚本文件（{}）未导出指定函数：{}", filename, module);
-                    continue;
-                }
-                if (!exports.getMember(module).canExecute()) {
-                    logger.warn("脚本文件（{}）导出的对象（{}）无法被执行", filename, module);
-                    continue;
-                }
-                logger.info("Loading route rule: file=[{}], endpoint=[{}], binding=[{}]", filename, module, rule.getValue());
-                result.add(convert(filename, script, module, rule.getValue(), exports.getMember(module)));
+                result.add(convert(filename, location, rule.getKey(), rule.getValue()));
             }
         }
         return result;
     }
 
-    private RestRoute convert(String filename, File script, String endpoint, String head, Value function) {
+    private RestRoute convert(String filename, File file, String module, String head) {
+        logger.info("Loading route rule: file=[{}], endpoint=[{}], binding=[{}]", filename, module, head);
         RestRoute result = new RestRoute();
-        result.setFile(script.getAbsolutePath());
-        result.setModified(script.lastModified());
-        result.setNamespace(namespace("file", filename, endpoint));
-        result.setFunction(function);
+        result.setFilepath(file.getAbsolutePath());
+        result.setEndpoint(module);
+        result.setModified(file.lastModified());
+        result.setNamespace(namespace("file", filename, module));
         String[] parts = StringUtils.split(head, " ", 2);
         if (parts.length == 1) {
             result.setPath(StringUtils.trim(parts[0]));

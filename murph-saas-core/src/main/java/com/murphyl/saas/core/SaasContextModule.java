@@ -2,6 +2,8 @@ package com.murphyl.saas.core;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
+import com.google.inject.name.Names;
+import com.murphyl.saas.modules.ResourceManager;
 import com.murphyl.saas.support.web.profile.RouteProfile;
 import com.murphyl.saas.support.web.profile.loader.FilesystemRouteProfileLoader;
 import com.murphyl.saas.support.web.profile.loader.JdbcRouteProfileLoader;
@@ -9,10 +11,12 @@ import com.murphyl.saas.support.web.profile.manager.RouteProfileLoader;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigBeanFactory;
 import com.typesafe.config.ConfigFactory;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.inject.Singleton;
 
 /**
@@ -29,6 +33,7 @@ public class SaasContextModule extends AbstractModule {
     protected void configure() {
         Config configModule = ConfigFactory.load();
         // 配置
+        bind(String.class).annotatedWith(Names.named("cwd")).toInstance(configModule.getString("app.cwd"));
         bind(Config.class).toProvider(() -> configModule).asEagerSingleton();
         // TODO datasource
     }

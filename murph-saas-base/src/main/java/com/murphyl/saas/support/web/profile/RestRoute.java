@@ -1,27 +1,24 @@
 package com.murphyl.saas.support.web.profile;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 /**
  * Rest - 请求
  *
  * @date: 2021/12/24 18:45
  * @author: murph
  */
-public class RestRoute<T> {
+public class RestRoute {
 
     private String namespace;
 
-    private String file;
+    private String filepath;
+
+    private String endpoint;
 
     private Long modified;
 
     private String method;
 
     private String path;
-
-    @JsonIgnore
-    private T function;
 
     public String getNamespace() {
         return namespace;
@@ -31,12 +28,20 @@ public class RestRoute<T> {
         this.namespace = namespace;
     }
 
-    public String getFile() {
-        return file;
+    public String getFilepath() {
+        return filepath;
     }
 
-    public void setFile(String file) {
-        this.file = file;
+    public void setFilepath(String filepath) {
+        this.filepath = filepath;
+    }
+
+    public String getEndpoint() {
+        return endpoint;
+    }
+
+    public void setEndpoint(String endpoint) {
+        this.endpoint = endpoint;
     }
 
     public Long getModified() {
@@ -63,11 +68,4 @@ public class RestRoute<T> {
         this.path = path;
     }
 
-    public T getFunction() {
-        return function;
-    }
-
-    public void setFunction(T function) {
-        this.function = function;
-    }
 }

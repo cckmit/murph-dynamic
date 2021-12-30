@@ -1,7 +1,6 @@
 package com.murphyl.saas.support.web.profile.loader;
 
 import com.murphyl.saas.support.web.profile.RestRoute;
-import com.murphyl.saas.support.web.profile.manager.RouteProfileLoader;
 
 import java.util.List;
 import java.util.Map;
@@ -12,7 +11,7 @@ import java.util.Map;
  * @date: 2021/12/24 15:37
  * @author: murph
  */
-public class JdbcRouteProfileLoader implements RouteProfileLoader {
+public class JdbcRouteProfileLoader extends AbstractRouteProfileLoader {
 
     public JdbcRouteProfileLoader(Map<String, Object> options) {
     }

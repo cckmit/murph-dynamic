@@ -4,7 +4,7 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.murphyl.saas.core.SaasContextModule;
 import com.murphyl.saas.core.SaasFeature;
-import com.murphyl.saas.support.VerticleProxy;
+import com.murphyl.saas.support.SaasVerticle;
 import com.typesafe.config.Config;
 import io.vertx.core.*;
 import org.apache.commons.lang3.Validate;
@@ -43,7 +43,7 @@ public class SaasApplication extends AbstractVerticle {
         Validate.notEmpty(features, "Can not load dynamic modules via SPI: " + SaasFeature.class.getCanonicalName());
         for (SaasFeature saasFeature : ServiceHelper.loadFactories(SaasFeature.class)) {
             injector.injectMembers(saasFeature);
-            vertx.deployVerticle(new VerticleProxy(saasFeature), options, deployed -> {
+            vertx.deployVerticle(new SaasVerticle(saasFeature), options, deployed -> {
                 if (deployed.succeeded()) {
                     logger.info("Dynamic module（{}）deploy success！", saasFeature);
                 } else {

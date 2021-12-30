@@ -12,15 +12,15 @@ import io.vertx.core.Vertx;
  * @author: murph
  * @date: 2021/12/26 - 1:45
  */
-public class VerticleProxy implements Verticle {
+public class SaasVerticle implements Verticle {
 
     private Vertx vertx;
 
-    private Context context;
+    protected Context context;
 
     private SaasFeature feature;
 
-    public VerticleProxy(SaasFeature feature) {
+    public SaasVerticle(SaasFeature feature) {
         this.feature = feature;
     }
 

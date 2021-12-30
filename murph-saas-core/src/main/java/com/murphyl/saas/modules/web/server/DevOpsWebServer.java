@@ -122,10 +122,10 @@ public class DevOpsWebServer extends AbstractVerticle {
         try {
             logger.info("Reloading front user route rules……");
             dynamicRouterManager.reload();
-            List<RestRoute<Value>> routes = dynamicRouterManager.getLoadedRoutes();
+            List<RestRoute> routes = dynamicRouterManager.getLoadedRoutes();
             Map<String, Value> routeTable = new HashMap<>(routes.size());
-            for (RestRoute<Value> route : routes) {
-                routeTable.put(route.getPath(), route.getFunction());
+            for (RestRoute route : routes) {
+                // routeTable.put(route.getPath(), route.getFunction());
             }
             context.put(PREVIEW_ROOT, routeTable);
             ctx.redirect(ctx.currentRoute().getPath());

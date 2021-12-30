@@ -6,5 +6,5 @@ package com.murphyl.expresssion.core;
  * @date: 2021/12/23 10:42
  * @author: murph
  */
-public interface ExpressionUdfNamespace {
+public interface UdfSourceAssembly {
 }

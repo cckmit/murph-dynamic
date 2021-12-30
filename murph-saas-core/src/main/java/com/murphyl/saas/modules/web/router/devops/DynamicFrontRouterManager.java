@@ -1,8 +1,8 @@
 package com.murphyl.saas.modules.web.router.devops;
 
+import com.murphyl.saas.modules.ResourceManager;
 import com.murphyl.saas.support.web.profile.RestRoute;
 import com.murphyl.saas.support.web.profile.manager.RouteProfileLoader;
-import org.graalvm.polyglot.Value;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -21,7 +21,10 @@ public class DynamicFrontRouterManager {
 
     private RouteProfileLoader routeProfileLoader;
 
-    private static final List<RestRoute<Value>> LOADED_ROUTES = new ArrayList<>();
+    @Inject
+    private ResourceManager resourceManager;
+
+    private static final List<RestRoute> LOADED_ROUTES = new ArrayList<>();
 
     private static final LongAdder DYNAMIC_ROUTES_VERSION = new LongAdder();
 
@@ -40,7 +43,7 @@ public class DynamicFrontRouterManager {
         }
     }
 
-    public List<RestRoute<Value>> getLoadedRoutes() {
+    public List<RestRoute> getLoadedRoutes() {
         return LOADED_ROUTES;
     }
 
