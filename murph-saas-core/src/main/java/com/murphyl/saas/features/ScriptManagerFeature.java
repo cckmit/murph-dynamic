@@ -14,9 +14,9 @@ import javax.inject.Inject;
  * @author: murph
  * @date: 2021/12/26 - 0:37
  */
-public class ExpressionManagerFeature implements SaasFeature<Vertx> {
+public class ScriptManagerFeature implements SaasFeature<Vertx> {
 
-    private static final Logger logger = LoggerFactory.getLogger(ExpressionManagerFeature.class);
+    private static final Logger logger = LoggerFactory.getLogger(ScriptManagerFeature.class);
 
     @Inject
     private Config env;
